@@ -50,6 +50,7 @@ values ('album', 'album', true)
 on conflict (id) do nothing;
 
 -- Permitir lectura pública de las fotos del álbum
-create policy if not exists "album lectura publica"
+drop policy if exists "album lectura publica" on storage.objects;
+create policy "album lectura publica"
   on storage.objects for select
   using (bucket_id = 'album');
