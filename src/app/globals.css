@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* shadcn tokens — tema claro (usado en el panel admin) */
+    --background: 40 33% 97%;
+    --foreground: 222 39% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 39% 18%;
+    --primary: 222 39% 18%;
+    --primary-foreground: 40 33% 97%;
+    --secondary: 40 20% 92%;
+    --secondary-foreground: 222 39% 18%;
+    --muted: 40 20% 92%;
+    --muted-foreground: 222 15% 45%;
+    --accent: 38 49% 51%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 8 55% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 20% 88%;
+    --input: 222 20% 88%;
+    --ring: 38 49% 51%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 217 32% 9%;
+    --foreground: 40 25% 90%;
+    --card: 219 27% 13%;
+    --card-foreground: 40 25% 90%;
+    --primary: 40 25% 90%;
+    --primary-foreground: 217 32% 9%;
+    --secondary: 219 20% 18%;
+    --secondary-foreground: 40 25% 90%;
+    --muted: 219 20% 18%;
+    --muted-foreground: 220 12% 65%;
+    --accent: 38 55% 62%;
+    --accent-foreground: 217 32% 9%;
+    --destructive: 8 55% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 219 20% 22%;
+    --input: 219 20% 22%;
+    --ring: 38 55% 62%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: hsl(38 49% 51% / 0.25);
+  }
+}
+
+@layer components {
+  /* Etiqueta pequeña en mayúsculas con tracking (eyebrow) */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.28em] text-gold;
+  }
+  /* Línea de horizonte dorada — motivo recurrente del Salar */
+  .horizon {
+    @apply h-px w-full max-w-[240px] mx-auto;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      theme("colors.gold.soft"),
+      transparent
+    );
+  }
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/15;
+  }
+}
+
+/* Respeta la preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Cada sección de la invitación (con .snap-start) ocupa una pantalla y
+     el scroll "para" en cada una al deslizar (móvil). Proximity = suave. */
+  scroll-snap-type: y proximity;
+}
+
+/* Secciones a pantalla completa que actúan como "paso" */
+.snap-start {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.35);
+  border-radius: 999px;
+}

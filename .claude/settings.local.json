@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(mkdir -p public/photos public/icons src/app/i/\\\\[token\\\\] src/app/admin/login src/app/album/\\\\[token\\\\] \"src/app/api/album/[token]\" src/components/invitation src/components/admin src/components/ui src/lib/supabase supabase data)",
+      "Bash(cp \"WhatsApp Image 2026-08-04 at 6.06.35 PM.jpeg\" public/photos/hero-couple.jpeg)",
+      "Bash(cp \"WhatsApp Image 2026-08-04 at 6.06.35 PM \\(1\\).jpeg\" public/photos/kiss-golden.jpeg)",
+      "Bash(cp \"WhatsApp Image 2026-08-04 at 6.06.35 PM \\(2\\).jpeg\" public/photos/silhouette.jpeg)",
+      "Bash(cp \"WhatsApp Image 2026-08-04 at 6.06.35 PM \\(3\\).jpeg\" public/photos/wine-sunset.jpeg)"
+    ]
+  }
+}
