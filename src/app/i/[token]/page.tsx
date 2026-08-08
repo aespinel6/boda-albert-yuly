@@ -8,6 +8,7 @@ import { Countdown } from "@/components/invitation/countdown";
 import { Story } from "@/components/invitation/story";
 import { InviteStatement } from "@/components/invitation/invite-statement";
 import { Details } from "@/components/invitation/details";
+import { MeetSection } from "@/components/invitation/meet-section";
 import { DressCode } from "@/components/invitation/dress-code";
 import { Gallery } from "@/components/invitation/gallery";
 import { Gifts } from "@/components/invitation/gifts";
@@ -40,6 +41,7 @@ export default async function InvitationPage({
       <Story />
       <InviteStatement />
       <Details />
+      <MeetSection />
       <DressCode />
       <Gallery />
       <Gifts />

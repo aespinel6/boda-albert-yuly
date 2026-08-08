@@ -42,14 +42,24 @@ export const wedding = {
     time: "4:00 PM",
     address: "Dirección de la parroquia",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=Parroquia+Sagrado+Corazon",
+    calendarUrl: "https://calendar.app.google/SbR5b7QVhkmUtroa9",
   },
 
   reception: {
     title: "Recepción",
     place: "Alma Jardín",
-    time: "5:30 PM",
+    time: "6:00 PM",
     address: "Dirección del salón",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=Alma+Jardin",
+    calendarUrl: "https://calendar.app.google/z1DmP9ze17mBiVAy5",
+  },
+
+  // Transmisión / reunión virtual para invitados a distancia
+  meet: {
+    // Reemplaza con el enlace real de tu Google Meet cuando lo tengas
+    url: "https://meet.google.com/xxx-xxxx-xxx",
+    time: "4:00 PM (hora de Colombia)",
+    note: "¿No puedes acompañarnos en persona? Únete a la transmisión de la ceremonia por Google Meet y celebremos juntos, estés donde estés.",
   },
 
   dressCode: {
@@ -82,18 +92,21 @@ export const wedding = {
 
   story: [
     {
-      title: "Nos conocimos",
-      text: "Donde todo empezó, sin saber que sería para siempre.",
+      title: "Cómo nos conocimos",
+      date: "Marzo 2022",
+      text: "Todo comenzó con un café en marzo de 2022. Lo que parecía una conversación sencilla se convirtió en el inicio de una hermosa historia. Desde aquel primer encuentro, entre risas, largas conversaciones y momentos compartidos, nuestros caminos se fueron uniendo hasta llevarnos al lugar donde hoy estamos.",
       photo: "/photos/wine-sunset.jpeg",
     },
     {
       title: "Nuestro primer viaje",
-      text: "El Salar de Uyuni: cielo y tierra en un mismo espejo.",
+      date: "20.000 km en moto",
+      text: "Con una moto, maletas llenas y muchas ganas de descubrir el mundo, recorrimos cerca de 20.000 kilómetros por Perú, Chile, Bolivia y Ecuador. Entre paisajes inolvidables, retos y aventuras, aprendimos a conocernos desde una perspectiva diferente. Aquel recorrido nos regaló recuerdos imborrables y nos enseñó que, sin importar el destino, siempre vale la pena seguir adelante cuando se comparte el camino con alguien especial.",
       photo: "/photos/hero-couple.jpeg",
     },
     {
       title: "El compromiso",
-      text: "Un atardecer, una pregunta y un sí para toda la vida.",
+      date: "31 de diciembre de 2025",
+      text: "El 31 de diciembre de 2025, mientras terminaba un año lleno de bendiciones, llegó a mi casa acompañado de mariachis y con una sorpresa que jamás olvidaré. Con el corazón lleno de amor me pidió que compartiéramos el resto de nuestras vidas juntos, y entre lágrimas de felicidad, mi respuesta fue un emocionado e inolvidable «sí».",
       photo: "/photos/silhouette.jpeg",
     },
   ],
