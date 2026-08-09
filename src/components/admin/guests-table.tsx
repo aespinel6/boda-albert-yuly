@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState, useTransition } from "react";
 import {
   Search, Download, MessageCircle, Check, Copy, Users2, Pencil,
-  ChevronDown, ChevronRight, Baby,
+  ChevronDown, ChevronRight, Baby, Eye,
 } from "lucide-react";
 import type { Guest, GuestStatus } from "@/lib/types";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/lib/utils";
 import { toggleSent } from "@/app/actions/admin";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GuestFormDialog } from "./guest-form-dialog";
 import { DeleteGuestButton } from "./delete-guest-button";
@@ -247,6 +247,19 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                         </Button>
                       }
                     />
+                    <a
+                      href={`/i/${g.token}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Ver invitación"
+                      className={buttonVariants({
+                        variant: "ghost",
+                        size: "icon",
+                        className: "size-8",
+                      })}
+                    >
+                      <Eye className="size-4" />
+                    </a>
                     <Button
                       variant="ghost"
                       size="icon"
