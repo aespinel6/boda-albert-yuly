@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { wedding } from "@/lib/config";
-import { cn } from "@/lib/utils";
 import { Reveal } from "./reveal";
 import { ScrollDownButton } from "./scroll-down-button";
 
@@ -10,36 +9,28 @@ export function Story() {
   return (
     <>
       {wedding.story.map((item, i) => (
-        <StoryChapter key={item.title} item={item} dark={i % 2 === 1} />
+        <StoryChapter key={item.title} item={item} index={i + 1} />
       ))}
     </>
   );
 }
 
-function StoryChapter({ item, dark }: { item: StoryItem; dark: boolean }) {
+function StoryChapter({ item, index }: { item: StoryItem; index: number }) {
   return (
-    <section
-      className={cn(
-        "snap-start flex min-h-[100svh] flex-col justify-center py-12",
-        dark ? "bg-twilight-deep text-salt-100" : "bg-salt-50 text-twilight"
-      )}
-    >
+    <section className="snap-start flex min-h-[100svh] flex-col justify-center bg-salt-50 py-12 text-twilight">
       <div className="container">
-        <Reveal className="mx-auto max-w-md text-center">
-          <p className={cn("eyebrow", dark && "text-gold-light")}>Nuestra historia</p>
-          <h3 className="mt-2 font-serif text-2xl leading-tight sm:text-3xl">
-            {item.title}
-          </h3>
-          <p
-            className={cn(
-              "mt-1 text-xs uppercase tracking-[0.2em]",
-              dark ? "text-salt-200/60" : "text-twilight/50"
-            )}
-          >
-            {item.date}
-          </p>
+        <Reveal className="mx-auto max-w-sm">
+          {/* Marcador de capítulo — la historia sí es una secuencia */}
+          <div className="flex items-center justify-center gap-3">
+            <span className="font-serif text-lg leading-none text-gold">
+              {String(index).padStart(2, "0")}
+            </span>
+            <span className="h-px w-7 bg-gold/40" aria-hidden />
+            <span className="eyebrow">Nuestra historia</span>
+          </div>
 
-          <div className="relative mx-auto mt-6 aspect-[3/2] w-full max-w-sm overflow-hidden rounded-2xl shadow-xl">
+          {/* Foto editorial con el título encima */}
+          <figure className="relative mt-6 aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-2xl ring-1 ring-gold/25 ring-offset-4 ring-offset-salt-50">
             <Image
               src={item.photo}
               alt={item.title}
@@ -47,19 +38,26 @@ function StoryChapter({ item, dark }: { item: StoryItem; dark: boolean }) {
               sizes="(max-width: 640px) 88vw, 384px"
               className="object-cover"
             />
-          </div>
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-twilight via-twilight/45 to-transparent"
+              aria-hidden
+            />
+            <figcaption className="absolute inset-x-0 bottom-0 p-5 text-left">
+              <p className="text-[10px] uppercase tracking-[0.24em] text-gold-light">
+                {item.date}
+              </p>
+              <h3 className="mt-1.5 font-serif text-2xl leading-tight text-white [text-wrap:balance] sm:text-[1.75rem]">
+                {item.title}
+              </h3>
+            </figcaption>
+          </figure>
 
-          <p
-            className={cn(
-              "mt-6 text-sm leading-relaxed sm:text-[15px]",
-              dark ? "text-salt-200/85" : "text-twilight/75"
-            )}
-          >
+          <p className="mt-6 text-center text-sm leading-relaxed text-twilight/75 sm:text-[15px]">
             {item.text}
           </p>
         </Reveal>
 
-        <ScrollDownButton variant="inline" tone={dark ? "light" : "dark"} />
+        <ScrollDownButton variant="inline" tone="dark" />
       </div>
     </section>
   );

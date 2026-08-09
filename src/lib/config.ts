@@ -92,21 +92,21 @@ export const wedding = {
 
   story: [
     {
-      title: "Cómo nos conocimos",
-      date: "Marzo 2022",
-      text: "Todo comenzó con un café en marzo de 2022. Lo que parecía una conversación sencilla se convirtió en el inicio de una hermosa historia. Desde aquel primer encuentro, entre risas, largas conversaciones y momentos compartidos, nuestros caminos se fueron uniendo hasta llevarnos al lugar donde hoy estamos.",
+      title: "Un café que lo cambió todo",
+      date: "Marzo de 2022",
+      text: "Un café. Eso fue todo lo que hizo falta. Lo que parecía una charla cualquiera se volvió de esas que uno no quiere terminar: las risas que llegan solas, las horas que se escapan sin permiso, las palabras que de pronto sobran. Ninguno lo supo esa tarde, pero ahí —entre dos tazas y mil historias— dos caminos que venían andando por separado decidieron volverse uno solo.",
       photo: "/photos/wine-sunset.jpeg",
     },
     {
-      title: "Nuestro primer viaje",
-      date: "20.000 km en moto",
-      text: "Con una moto, maletas llenas y muchas ganas de descubrir el mundo, recorrimos cerca de 20.000 kilómetros por Perú, Chile, Bolivia y Ecuador. Entre paisajes inolvidables, retos y aventuras, aprendimos a conocernos desde una perspectiva diferente. Aquel recorrido nos regaló recuerdos imborrables y nos enseñó que, sin importar el destino, siempre vale la pena seguir adelante cuando se comparte el camino con alguien especial.",
+      title: "20.000 kilómetros de nosotros",
+      date: "Perú · Chile · Bolivia · Ecuador",
+      text: "Una moto, dos cascos y el mundo por delante. Cruzamos Perú, Chile, Bolivia y Ecuador: veinte mil kilómetros de carretera, de amaneceres que no caben en una foto y de noches en las que el cielo fue nuestro techo. Aprendimos a leernos sin hablar, a reírnos de la lluvia, a sostenernos cuando el mapa se acababa. Y descubrimos algo que ya no se nos olvida: el destino importa mucho menos que la persona que va contigo.",
       photo: "/photos/hero-couple.jpeg",
     },
     {
-      title: "El compromiso",
+      title: "El sí que esperábamos",
       date: "31 de diciembre de 2025",
-      text: "El 31 de diciembre de 2025, mientras terminaba un año lleno de bendiciones, llegó a mi casa acompañado de mariachis y con una sorpresa que jamás olvidaré. Con el corazón lleno de amor me pidió que compartiéramos el resto de nuestras vidas juntos, y entre lágrimas de felicidad, mi respuesta fue un emocionado e inolvidable «sí».",
+      text: "El último día de un año que nos regaló de todo. Llegó a mi casa con mariachis, con el corazón en la mano y con la pregunta que yo llevaba soñando en silencio. Y el mundo entero se quedó callado. Entre lágrimas, música y un abrazo que no quería soltar, dije que sí. Así, justo cuando un año terminaba, empezaba para siempre el resto de nuestra vida.",
       photo: "/photos/silhouette.jpeg",
     },
   ],
