@@ -78,6 +78,27 @@
   }
 }
 
+/* Lluvia de sobres — sobres dorados cayendo suavemente */
+@keyframes envelope-fall {
+  0% {
+    transform: translateY(-15%) rotate(var(--rot, 0deg));
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  88% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(115vh) rotate(calc(var(--rot, 0deg) + 35deg));
+    opacity: 0;
+  }
+}
+.envelope-fall {
+  animation: envelope-fall var(--dur, 14s) linear var(--delay, 0s) infinite;
+}
+
 /* Respeta la preferencia de movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -8,10 +8,12 @@ import {
   checkPassword,
   createSessionToken,
 } from "@/lib/auth";
+import { z } from "zod";
 import { guestFormSchema } from "@/lib/validations";
 import {
   createGuest,
   updateGuest,
+  updateGuestGroup,
   deleteGuest,
   markSent,
 } from "@/lib/guests";
@@ -50,6 +52,17 @@ export async function logout() {
 export async function toggleSent(id: string, sent: boolean) {
   await markSent(id, sent);
   revalidatePath("/admin");
+}
+
+/** Cambio rápido de grupo desde la tabla. */
+export async function setGuestGroup(id: string, group: string) {
+  const parsed = z
+    .enum(["familia", "amigos", "trabajo", "otros"])
+    .safeParse(group);
+  if (!parsed.success) return { ok: false as const };
+  await updateGuestGroup(id, parsed.data);
+  revalidatePath("/admin");
+  return { ok: true as const };
 }
 
 export type GuestActionState = { ok: boolean; error?: string };

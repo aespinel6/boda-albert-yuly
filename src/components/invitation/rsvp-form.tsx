@@ -2,9 +2,9 @@
 
 import { useActionState, useState } from "react";
 import Image from "next/image";
-import { Check, X, Heart, Loader2, Users2, Baby } from "lucide-react";
+import { Check, X, Heart, Loader2, Users2, Baby, Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Guest } from "@/lib/types";
+import type { Guest, RsvpMode } from "@/lib/types";
 import { firstName } from "@/lib/utils";
 import { wedding } from "@/lib/config";
 import { submitRsvp, type RsvpState } from "@/app/actions/rsvp";
@@ -19,12 +19,18 @@ export function RsvpForm({ guest }: { guest: Guest }) {
   const party = guest.party ?? [];
   const alreadyDone = guest.status !== "pending";
 
-  const [attending, setAttending] = useState<boolean | null>(
-    guest.status === "confirmed" ? true : guest.status === "declined" ? false : null
-  );
-  // Preseleccionados: si ya confirmó, respeta su elección; si no, todos marcados.
-  const [selected, setSelected] = useState<string[]>(() =>
+  const [mode, setMode] = useState<RsvpMode | null>(
     guest.status === "confirmed"
+      ? "presencial"
+      : guest.status === "virtual"
+        ? "virtual"
+        : guest.status === "declined"
+          ? "no"
+          : null
+  );
+  // Preseleccionados: si ya respondió, respeta su elección; si no, todos marcados.
+  const [selected, setSelected] = useState<string[]>(() =>
+    guest.status === "confirmed" || guest.status === "virtual"
       ? party.filter((m) => m.attending).map((m) => m.name)
       : party.map((m) => m.name)
   );
@@ -36,7 +42,15 @@ export function RsvpForm({ guest }: { guest: Guest }) {
 
   // ── Vista de agradecimiento ──────────────────────────────────
   if (!editing && (success || (alreadyDone && !state))) {
-    const goes = success ? state.attending : guest.status === "confirmed";
+    const answered: RsvpMode = success
+      ? state.mode
+      : guest.status === "confirmed"
+        ? "presencial"
+        : guest.status === "virtual"
+          ? "virtual"
+          : "no";
+    const goes = answered !== "no";
+    const isVirtual = answered === "virtual";
     const going = success
       ? party.filter((m) => selected.includes(m.name))
       : party.filter((m) => m.attending);
@@ -49,21 +63,33 @@ export function RsvpForm({ guest }: { guest: Guest }) {
           className="text-center"
         >
           <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-gold/20 text-gold-light">
-            {goes ? <Heart className="size-8" /> : <Check className="size-8" />}
+            {isVirtual ? (
+              <Video className="size-8" />
+            ) : goes ? (
+              <Heart className="size-8" />
+            ) : (
+              <Check className="size-8" />
+            )}
           </span>
           <h2 className="mt-6 font-serif text-3xl sm:text-4xl">
-            {goes ? "¡Gracias por confirmar!" : "Gracias por avisarnos"}
+            {isVirtual
+              ? "¡Nos vemos en línea!"
+              : goes
+                ? "¡Gracias por confirmar!"
+                : "Gracias por avisarnos"}
           </h2>
           <p className="mx-auto mt-3 max-w-md text-salt-200/90">
-            {goes
-              ? "Nos hace muy felices saber que nos acompañarás. ¡Nos vemos muy pronto! 💫"
-              : "Lamentamos que no puedas acompañarnos, pero agradecemos tu respuesta con cariño."}
+            {isVirtual
+              ? "Qué alegría que nos acompañarás desde donde estés. Te esperamos en la transmisión 💫"
+              : goes
+                ? "Nos hace muy felices saber que nos acompañarás. ¡Nos vemos muy pronto! 💫"
+                : "Lamentamos que no puedas acompañarnos, pero agradecemos tu respuesta con cariño."}
           </p>
 
           {goes && going.length > 0 && (
             <div className="mx-auto mt-6 max-w-xs rounded-2xl border border-white/15 bg-white/5 p-4 text-left">
               <p className="mb-2 text-center text-[10px] uppercase tracking-[0.2em] text-gold-light">
-                Asistirán {going.length}
+                {isVirtual ? "Se conectan" : "Asistirán"} {going.length}
               </p>
               <ul className="space-y-1.5">
                 {going.map((m) => (
@@ -103,15 +129,15 @@ export function RsvpForm({ guest }: { guest: Guest }) {
 
         <form action={formAction} className="mx-auto mt-7 w-full max-w-md">
           <input type="hidden" name="token" value={guest.token} />
-          <input type="hidden" name="attending" value={String(attending ?? "")} />
+          <input type="hidden" name="mode" value={mode ?? ""} />
 
-          {/* Sí / No */}
-          <div className="flex flex-col gap-3 sm:flex-row">
+          {/* Presencial / Virtual / No */}
+          <div className="flex flex-col gap-2.5">
             <button
               type="button"
-              onClick={() => setAttending(true)}
-              className={`flex-1 rounded-xl border px-5 py-4 font-medium transition-all ${
-                attending === true
+              onClick={() => setMode("presencial")}
+              className={`rounded-xl border px-5 py-3.5 font-medium transition-all ${
+                mode === "presencial"
                   ? "border-gold bg-gold text-twilight"
                   : "border-white/25 bg-white/5 text-white hover:bg-white/10"
               }`}
@@ -120,9 +146,20 @@ export function RsvpForm({ guest }: { guest: Guest }) {
             </button>
             <button
               type="button"
-              onClick={() => setAttending(false)}
-              className={`flex-1 rounded-xl border px-5 py-4 font-medium transition-all ${
-                attending === false
+              onClick={() => setMode("virtual")}
+              className={`rounded-xl border px-5 py-3.5 font-medium transition-all ${
+                mode === "virtual"
+                  ? "border-gold bg-gold text-twilight"
+                  : "border-white/25 bg-white/5 text-white hover:bg-white/10"
+              }`}
+            >
+              <Video className="mr-1.5 inline size-4" /> Los acompaño en línea
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("no")}
+              className={`rounded-xl border px-5 py-3.5 font-medium transition-all ${
+                mode === "no"
                   ? "border-white bg-white text-twilight"
                   : "border-white/25 bg-white/5 text-white hover:bg-white/10"
               }`}
@@ -133,7 +170,7 @@ export function RsvpForm({ guest }: { guest: Guest }) {
 
           {/* Lista fija de invitados */}
           <AnimatePresence>
-            {attending === true && party.length > 0 && (
+            {mode !== null && mode !== "no" && party.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -143,14 +180,14 @@ export function RsvpForm({ guest }: { guest: Guest }) {
                 <div className="mt-5 rounded-2xl border border-white/15 bg-white/5 p-4 text-left">
                   <div className="flex items-baseline justify-between">
                     <p className="text-sm font-medium text-white">
-                      ¿Quiénes asistirán?
+                      {mode === "virtual" ? "¿Quiénes se conectan?" : "¿Quiénes asistirán?"}
                     </p>
                     <span className="text-xs text-salt-200/70">
                       {selected.length} de {party.length}
                     </span>
                   </div>
                   <p className="mt-0.5 text-xs text-salt-200/60">
-                    Desmarca a quien no pueda asistir.
+                    Desmarca a quien no pueda acompañarnos.
                   </p>
 
                   <ul className="mt-3 space-y-2">
@@ -198,7 +235,7 @@ export function RsvpForm({ guest }: { guest: Guest }) {
             )}
           </AnimatePresence>
 
-          {attending !== null && (
+          {mode !== null && (
             <Button
               type="submit"
               variant="gold"

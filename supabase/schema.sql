@@ -22,8 +22,9 @@ create table if not exists public.guests (
   -- confirmar personas de esta lista (no puede agregar acompañantes).
   party          jsonb not null default '[]'::jsonb,
   token          text not null unique,
+  -- virtual = nos acompaña en línea (cuenta como invitado, no ocupa plato)
   status         text not null default 'pending'
-                 check (status in ('pending','confirmed','declined')),
+                 check (status in ('pending','confirmed','declined','virtual')),
   sent           boolean not null default false,
   companions     smallint,
   message        text,

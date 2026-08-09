@@ -9,7 +9,7 @@ import type { Guest, GuestStatus } from "@/lib/types";
 import {
   whatsappLink, whatsappMessage, invitationUrl, formatDateTime, firstName,
 } from "@/lib/utils";
-import { toggleSent } from "@/app/actions/admin";
+import { toggleSent, setGuestGroup } from "@/app/actions/admin";
 import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +20,16 @@ const STATUS_LABEL: Record<GuestStatus, string> = {
   confirmed: "Confirmó",
   pending: "Pendiente",
   declined: "No asiste",
+  virtual: "Virtual",
 };
-const STATUS_VARIANT: Record<GuestStatus, "confirmed" | "pending" | "declined"> = {
+const STATUS_VARIANT: Record<
+  GuestStatus,
+  "confirmed" | "pending" | "declined" | "virtual"
+> = {
   confirmed: "confirmed",
   pending: "pending",
   declined: "declined",
+  virtual: "virtual",
 };
 
 type StatusFilter = "all" | GuestStatus;
@@ -108,6 +113,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
   const statusFilters: Array<[StatusFilter, string]> = [
     ["all", "Todos"],
     ["confirmed", "Confirmados"],
+    ["virtual", "Virtuales"],
     ["pending", "Pendientes"],
     ["declined", "No asisten"],
   ];
@@ -210,9 +216,23 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="rounded-md bg-muted px-2 py-0.5 text-xs capitalize text-muted-foreground">
-                    {g.group}
-                  </span>
+                  <select
+                    value={g.group}
+                    disabled={pending}
+                    onChange={(e) => {
+                      const group = e.target.value;
+                      startTransition(async () => {
+                        await setGuestGroup(g.id, group);
+                      });
+                    }}
+                    title="Cambiar grupo"
+                    className="cursor-pointer rounded-md border-0 bg-muted px-2 py-1 text-xs capitalize text-muted-foreground transition-colors hover:bg-muted-foreground/15 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="familia">Familia</option>
+                    <option value="amigos">Amigos</option>
+                    <option value="trabajo">Trabajo</option>
+                    <option value="otros">Otros</option>
+                  </select>
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant={STATUS_VARIANT[g.status]}>{STATUS_LABEL[g.status]}</Badge>
@@ -220,7 +240,9 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                 <td className="px-4 py-3">
                   <div
                     className={`flex items-center justify-center gap-1 tabular-nums ${
-                      g.status === "confirmed" ? "text-foreground" : "text-muted-foreground"
+                      g.status === "confirmed" || g.status === "virtual"
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                     }`}
                   >
                     <Users2 className="size-3.5 opacity-60" />

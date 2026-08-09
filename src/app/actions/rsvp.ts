@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { rsvpSchema } from "@/lib/validations";
 import { getGuestByToken, saveRsvp } from "@/lib/guests";
 
+import type { RsvpMode } from "@/lib/types";
+
 export type RsvpState =
-  | { ok: true; attending: boolean }
+  | { ok: true; mode: RsvpMode }
   | { ok: false; error: string }
   | null;
 
@@ -15,7 +17,7 @@ export async function submitRsvp(
 ): Promise<RsvpState> {
   const parsed = rsvpSchema.safeParse({
     token: formData.get("token"),
-    attending: formData.get("attending") === "true",
+    mode: formData.get("mode"),
     attendees: formData.getAll("attendees").map(String),
   });
 
@@ -32,19 +34,19 @@ export async function submitRsvp(
   const allowed = new Set((guest.party ?? []).map((m) => m.name));
   const attendees = parsed.data.attendees.filter((n) => allowed.has(n));
 
-  if (parsed.data.attending && attendees.length === 0) {
-    return { ok: false, error: "Marca al menos una persona que asistirá." };
+  if (parsed.data.mode !== "no" && attendees.length === 0) {
+    return { ok: false, error: "Marca al menos una persona." };
   }
 
   try {
     await saveRsvp({
       token: parsed.data.token,
-      attending: parsed.data.attending,
+      mode: parsed.data.mode,
       attendees,
     });
     revalidatePath(`/i/${parsed.data.token}`);
     revalidatePath("/admin");
-    return { ok: true, attending: parsed.data.attending };
+    return { ok: true, mode: parsed.data.mode };
   } catch {
     return { ok: false, error: "No se pudo guardar tu confirmación. Intenta de nuevo." };
   }

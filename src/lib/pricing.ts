@@ -37,10 +37,13 @@ export function computeCost(guests: Guest[], prices: Prices): CostSummary {
   );
 }
 
-/** Proyección: TODOS los invitados salvo los que ya dijeron que no asisten. */
+/**
+ * Proyección de platos: todos menos los que no asisten y los virtuales
+ * (los virtuales cuentan como invitados, pero no ocupan plato).
+ */
 export function computeProjection(guests: Guest[], prices: Prices): CostSummary {
   return summarize(
-    guests.filter((g) => g.status !== "declined"),
+    guests.filter((g) => g.status !== "declined" && g.status !== "virtual"),
     prices
   );
 }

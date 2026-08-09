@@ -32,7 +32,7 @@ export const wedding = {
   // Dedicatoria de Albert para Yuly — banner después de la portada (editable)
   dedication: {
     eyebrow: "Para ti, Yuly",
-    text: "No creo en los milagros, pero creo en ti. En este universo inmenso y perfecto en su razón, encontrarte fue lo más cercano a lo eterno; a tu lado el tiempo se vuelve relativo, y las horas que vuelan las quiero infinitas. Te elegí con la razón y te amo con todo lo demás: serás mi constante en cada universo posible.",
+    text: "No creo en los milagros, pero creo en ti.\n\nEntre billones de estrellas y un cielo que no termina nunca, encontrarte fue lo más cercano a lo infinito. A tu lado el tiempo se vuelve relativo: las horas vuelan y, aun así, las quiero eternas.\n\nTe elegí con la razón y te amo con todo lo demás. Del cielo al infinito —y de regreso— volvería a elegirte en cada universo posible.",
     signature: "Albert",
   },
 
@@ -64,7 +64,8 @@ export const wedding = {
 
   dressCode: {
     label: "Elegante",
-    notes: ["Evitar el color blanco", "Sin tacones muy delgados (es en jardín)"],
+    avoid: ["Color blanco", "Azul claro"],
+    tip: "Zapato cómodo",
   },
 
   gifts: {
@@ -73,7 +74,7 @@ export const wedding = {
     envelope: {
       title: "Lluvia de sobres",
       detail: "El día del evento",
-      note: "Si deseas tener un detalle con nosotros, lo recibiremos con mucho cariño el día de la boda.",
+      note: "Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, lo recibiremos con todo el cariño el día de la boda.",
     },
   },
 

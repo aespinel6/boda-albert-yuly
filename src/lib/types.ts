@@ -1,4 +1,5 @@
-export type GuestStatus = "pending" | "confirmed" | "declined";
+/** `virtual` = nos acompaña en línea: cuenta como asistente pero NO ocupa plato. */
+export type GuestStatus = "pending" | "confirmed" | "declined" | "virtual";
 
 export type GuestGroup = "familia" | "amigos" | "trabajo" | "otros";
 
@@ -33,10 +34,13 @@ export interface Guest {
   created_at: string;
 }
 
+/** Respuesta del invitado: presencial, en línea, o no asiste. */
+export type RsvpMode = "presencial" | "virtual" | "no";
+
 /** Datos que envía el formulario RSVP */
 export interface RsvpInput {
   token: string;
-  attending: boolean;
+  mode: RsvpMode;
   /** Nombres (de la lista fija) que sí asistirán. */
   attendees: string[];
 }
@@ -46,6 +50,8 @@ export interface DashboardStats {
   confirmed: number;
   pending: number;
   declined: number;
-  totalAttendees: number; // suma de acompañantes confirmados
+  virtual: number; // invitaciones que nos acompañan en línea
+  totalAttendees: number; // personas confirmadas presencialmente
+  virtualAttendees: number; // personas que se conectan (sin plato)
   sent: number;
 }

@@ -71,17 +71,25 @@ export async function saveRsvp(input: RsvpInput): Promise<Guest> {
 
   // Solo se aceptan nombres que ya estaban en la lista fija del invitado.
   const chosen = new Set(input.attendees);
+  const asiste = input.mode !== "no";
   const party = (guest.party ?? []).map((m) => ({
     ...m,
-    attending: input.attending && chosen.has(m.name),
+    attending: asiste && chosen.has(m.name),
   }));
 
   const going = party.filter((m) => m.attending);
   const adults = going.filter((m) => m.kind === "adult").length;
   const children = going.filter((m) => m.kind === "child").length;
 
+  const status =
+    input.mode === "presencial"
+      ? ("confirmed" as const)
+      : input.mode === "virtual"
+        ? ("virtual" as const)
+        : ("declined" as const);
+
   const patch = {
-    status: input.attending ? ("confirmed" as const) : ("declined" as const),
+    status,
     party,
     adults,
     children,
@@ -175,6 +183,17 @@ export async function updateGuest(id: string, input: GuestInput): Promise<Guest>
   return data as Guest;
 }
 
+/** Cambia solo el grupo (edición rápida desde la tabla). */
+export async function updateGuestGroup(id: string, group: GuestGroup): Promise<void> {
+  if (isDemoMode()) {
+    demoStore.update(id, { group });
+    return;
+  }
+  const supabase = createSupabaseAdmin();
+  const { error } = await supabase.from("guests").update({ group }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export async function deleteGuest(id: string): Promise<void> {
   if (isDemoMode()) {
     demoStore.remove(id);
@@ -187,15 +206,18 @@ export async function deleteGuest(id: string): Promise<void> {
 
 export function computeStats(guests: Guest[]): DashboardStats {
   const confirmed = guests.filter((g) => g.status === "confirmed");
+  const virtual = guests.filter((g) => g.status === "virtual");
+  const people = (list: Guest[]) =>
+    list.reduce((sum, g) => sum + (g.adults ?? 0) + (g.children ?? 0), 0);
+
   return {
     total: guests.length,
     confirmed: confirmed.length,
     pending: guests.filter((g) => g.status === "pending").length,
     declined: guests.filter((g) => g.status === "declined").length,
-    totalAttendees: confirmed.reduce(
-      (sum, g) => sum + (g.adults ?? 0) + (g.children ?? 0),
-      0
-    ),
+    virtual: virtual.length,
+    totalAttendees: people(confirmed),
+    virtualAttendees: people(virtual),
     sent: guests.filter((g) => g.sent).length,
   };
 }

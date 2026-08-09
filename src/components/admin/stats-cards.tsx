@@ -1,4 +1,4 @@
-import { Users, Check, Clock, X, UserCheck, Send } from "lucide-react";
+import { Users, Check, Clock, X, UserCheck, Send, Video } from "lucide-react";
 import type { DashboardStats } from "@/lib/types";
 
 export function StatsCards({ stats }: { stats: DashboardStats }) {
@@ -7,12 +7,13 @@ export function StatsCards({ stats }: { stats: DashboardStats }) {
   const cards = [
     { label: "Invitados", value: stats.total, Icon: Users, tint: "text-mirror", bar: "bg-mirror", width: 100 },
     { label: "Confirmados", value: stats.confirmed, Icon: Check, tint: "text-emerald-600", bar: "bg-emerald-500", width: pct(stats.confirmed) },
+    { label: "Virtuales", value: stats.virtual, Icon: Video, tint: "text-mirror", bar: "bg-mirror", width: pct(stats.virtual) },
     { label: "Pendientes", value: stats.pending, Icon: Clock, tint: "text-gold", bar: "bg-gold", width: pct(stats.pending) },
     { label: "No asisten", value: stats.declined, Icon: X, tint: "text-destructive", bar: "bg-destructive", width: pct(stats.declined) },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
       {cards.map(({ label, value, Icon, tint, bar, width }) => (
         <div
           key={label}
@@ -34,7 +35,7 @@ export function StatsCards({ stats }: { stats: DashboardStats }) {
         </div>
       ))}
 
-      <div className="col-span-2 grid gap-4 sm:grid-cols-2 lg:col-span-4">
+      <div className="col-span-2 grid gap-4 sm:grid-cols-3 lg:col-span-5">
         <div className="flex items-center gap-4 rounded-2xl border border-border bg-gradient-to-br from-twilight to-twilight-soft p-5 text-white shadow-sm">
           <span className="flex size-11 flex-none items-center justify-center rounded-xl bg-white/10 text-gold-light">
             <UserCheck className="size-5" />
@@ -42,6 +43,18 @@ export function StatsCards({ stats }: { stats: DashboardStats }) {
           <div>
             <p className="text-sm text-white/70">Asistentes confirmados (con acompañantes)</p>
             <p className="font-serif text-3xl tabular-nums">{stats.totalAttendees} personas</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+          <span className="flex size-11 flex-none items-center justify-center rounded-xl bg-mirror/15 text-mirror">
+            <Video className="size-5" />
+          </span>
+          <div>
+            <p className="text-sm text-muted-foreground">Nos ven en línea (sin plato)</p>
+            <p className="font-serif text-3xl tabular-nums">
+              {stats.virtualAttendees} personas
+            </p>
           </div>
         </div>
 

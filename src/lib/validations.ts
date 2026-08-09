@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const rsvpSchema = z.object({
   token: z.string().min(1),
-  attending: z.boolean(),
+  mode: z.enum(["presencial", "virtual", "no"]),
   /** Nombres marcados (deben existir en la lista fija del invitado). */
   attendees: z.array(z.string().min(1)).max(40),
 });

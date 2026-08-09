@@ -11,6 +11,7 @@ const badgeVariants = cva(
         confirmed: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
         pending: "bg-gold/15 text-gold",
         declined: "bg-destructive/15 text-destructive",
+        virtual: "bg-mirror/20 text-mirror",
         outline: "border border-border text-muted-foreground",
       },
     },
