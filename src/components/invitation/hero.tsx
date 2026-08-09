@@ -69,7 +69,7 @@ export function Hero() {
         className="relative z-10 mx-auto max-w-2xl px-8 text-center text-white [text-shadow:0_2px_16px_rgba(15,20,30,0.55)]"
       >
         <p className="eyebrow text-gold-light">{wedding.dedication.eyebrow}</p>
-        <blockquote className="mt-5 space-y-3 font-serif text-base font-light italic leading-relaxed [text-wrap:balance] sm:text-xl sm:leading-relaxed">
+        <blockquote className="mt-4 space-y-2.5 font-serif text-[15px] font-light italic leading-relaxed [text-wrap:balance] sm:text-lg sm:leading-relaxed">
           {wedding.dedication.text.split(/\n\n+/).map((para, i, arr) => (
             <p key={i}>
               {i === 0 && "“"}

@@ -10,6 +10,7 @@ import { wedding } from "@/lib/config";
 import { submitRsvp, type RsvpState } from "@/app/actions/rsvp";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "./reveal";
+import { ScrollDownButton } from "./scroll-down-button";
 
 export function RsvpForm({ guest }: { guest: Guest }) {
   const [state, formAction, pending] = useActionState<RsvpState, FormData>(
@@ -276,8 +277,9 @@ function RsvpShell({ children }: { children: React.ReactNode }) {
         className="object-cover object-center"
       />
       <div className="absolute inset-0 bg-twilight/80" />
-      <div className="container relative z-10 flex justify-center text-white">
+      <div className="container relative z-10 flex flex-col items-center text-white">
         {children}
+        <ScrollDownButton variant="inline" tone="light" />
       </div>
     </section>
   );

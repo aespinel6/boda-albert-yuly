@@ -32,7 +32,7 @@ export const wedding = {
   // Dedicatoria de Albert para Yuly — banner después de la portada (editable)
   dedication: {
     eyebrow: "Para ti, Yuly",
-    text: "No creo en los milagros, pero creo en ti.\n\nEntre billones de estrellas y un cielo que no termina nunca, encontrarte fue lo más cercano a lo infinito. A tu lado el tiempo se vuelve relativo: las horas vuelan y, aun así, las quiero eternas.\n\nTe elegí con la razón y te amo con todo lo demás. Del cielo al infinito —y de regreso— volvería a elegirte en cada universo posible.",
+    text: "Soy un hombre de razón. Me gusta entender cómo funciona el mundo, buscarle explicación a todo, no creer en aquello que no se puede demostrar.\n\nY entonces llegaste tú.\n\nNo creo en los milagros, pero creo en ti. Entre billones de estrellas, en un universo inmenso que no tenía ninguna obligación de cruzarnos, encontrarte fue lo más cercano a lo infinito que he conocido. Contigo el tiempo se vuelve relativo: las horas vuelan y, aun así, las quiero eternas.\n\nEres la mujer más hermosa que la vida pudo regalarme, y lo digo sabiendo que tu belleza más grande no está en las fotos, sino en cómo cuidas, en cómo sueñas, en cómo me haces mejor sin siquiera proponértelo.\n\nTe elegí con la razón y te amo con todo lo demás. Del cielo al infinito —y de regreso— volvería a elegirte en cada universo posible.\n\nGracias por decir que sí.",
     signature: "Albert",
   },
 
