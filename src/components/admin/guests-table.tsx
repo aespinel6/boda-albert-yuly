@@ -288,41 +288,36 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                 </td>
               </tr>
 
-              {/* Desplegable: acompañantes con nombre */}
+              {/* Desplegable: acompañantes, como sub-líneas indentadas */}
               {isOpen && companions.length > 0 && (
-                <tr className="bg-muted/30">
-                  <td colSpan={6} className="px-4 pb-4 pt-0">
-                    <div className="ml-12 rounded-xl border border-border bg-card p-3">
-                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Acompañantes invitados
-                      </p>
-                      <ul className="grid gap-1.5 sm:grid-cols-2">
-                        {companions.map((m) => (
-                          <li
-                            key={m.name}
-                            className="flex items-center gap-2 text-sm text-foreground"
-                          >
-                            {m.kind === "child" ? (
-                              <Baby className="size-3.5 flex-none text-muted-foreground" />
-                            ) : (
-                              <Users2 className="size-3.5 flex-none text-muted-foreground" />
-                            )}
-                            <span className="min-w-0 flex-1 truncate">{m.name}</span>
-                            {g.status === "confirmed" && (
-                              <span
-                                className={
-                                  m.attending
-                                    ? "text-xs font-medium text-emerald-600"
-                                    : "text-xs text-muted-foreground line-through"
-                                }
-                              >
-                                {m.attending ? "asiste" : "no asiste"}
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                <tr>
+                  <td colSpan={6} className="px-4 pb-3 pt-0">
+                    <ul className="ml-12 space-y-1.5 border-l border-border pl-4">
+                      {companions.map((m) => (
+                        <li
+                          key={m.name}
+                          className="flex items-center gap-2 text-sm text-muted-foreground"
+                        >
+                          {m.kind === "child" ? (
+                            <Baby className="size-3.5 flex-none opacity-70" />
+                          ) : (
+                            <Users2 className="size-3.5 flex-none opacity-70" />
+                          )}
+                          <span className="truncate">{m.name}</span>
+                          {g.status === "confirmed" && (
+                            <span
+                              className={
+                                m.attending
+                                  ? "text-xs font-medium text-emerald-600"
+                                  : "text-xs line-through opacity-70"
+                              }
+                            >
+                              {m.attending ? "asiste" : "no asiste"}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
                   </td>
                 </tr>
               )}
