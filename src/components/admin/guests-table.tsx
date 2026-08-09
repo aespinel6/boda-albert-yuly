@@ -50,13 +50,15 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
-    return guests.filter((g) => {
-      if (status !== "all" && g.status !== status) return false;
-      if (group !== "all" && g.group !== group) return false;
-      if (q && !g.name.toLowerCase().includes(q) && !(g.phone ?? "").includes(q))
-        return false;
-      return true;
-    });
+    return guests
+      .filter((g) => {
+        if (status !== "all" && g.status !== status) return false;
+        if (group !== "all" && g.group !== group) return false;
+        if (q && !g.name.toLowerCase().includes(q) && !(g.phone ?? "").includes(q))
+          return false;
+        return true;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
   }, [guests, query, status, group]);
 
   function sendWhatsapp(g: Guest) {

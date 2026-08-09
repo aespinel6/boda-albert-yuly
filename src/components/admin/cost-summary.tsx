@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users2, Baby, UtensilsCrossed, Wallet } from "lucide-react";
+import { Users2, Baby, UtensilsCrossed, Check } from "lucide-react";
 import type { Guest } from "@/lib/types";
-import { computeCost, formatCOP, type Prices } from "@/lib/pricing";
+import {
+  computeCost,
+  computeProjection,
+  formatCOP,
+  type CostSummary as Summary,
+  type Prices,
+} from "@/lib/pricing";
 import { wedding } from "@/lib/config";
 
 const STORAGE_KEY = "boda_prices";
@@ -15,7 +21,6 @@ export function CostSummary({ guests }: { guests: Guest[] }) {
   });
   const [loaded, setLoaded] = useState(false);
 
-  // Cargar precios guardados
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -27,29 +32,30 @@ export function CostSummary({ guests }: { guests: Guest[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Guardar al cambiar
   useEffect(() => {
     if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(prices));
   }, [prices, loaded]);
 
-  const cost = useMemo(() => computeCost(guests, prices), [guests, prices]);
+  const confirmed = useMemo(() => computeCost(guests, prices), [guests, prices]);
+  const projection = useMemo(() => computeProjection(guests, prices), [guests, prices]);
+  const pending = projection.guests - confirmed.guests;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div className="border-b border-border px-6 py-4">
-        <h2 className="font-serif text-2xl leading-tight">Resumen de confirmados</h2>
+        <h2 className="font-serif text-2xl leading-tight">Platos y presupuesto</h2>
         <p className="text-sm text-muted-foreground">
-          Personas y costo estimado de comida — solo invitados que ya confirmaron.
+          Estimado mientras confirman, y el total ya confirmado.
         </p>
       </div>
 
-      <div className="grid gap-6 p-6 lg:grid-cols-[1fr_1.2fr]">
+      <div className="space-y-6 p-6">
         {/* Precios editables */}
         <div>
           <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Precio por persona
+            Precio por plato
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid max-w-md grid-cols-2 gap-3">
             <PriceInput
               label="Adulto"
               Icon={Users2}
@@ -63,48 +69,110 @@ export function CostSummary({ guests }: { guests: Guest[] }) {
               onChange={(child) => setPrices((p) => ({ ...p, child }))}
             />
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Los precios se guardan en este dispositivo. Ajústalos según tu salón.
-          </p>
         </div>
 
-        {/* Totales */}
-        <div className="rounded-2xl bg-gradient-to-br from-twilight to-twilight-soft p-6 text-white">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <Stat label="Adultos" value={cost.adults} />
-            <Stat label="Niños" value={cost.children} />
-            <Stat label="Personas" value={cost.people} highlight />
-          </div>
-
-          <div className="my-5 h-px bg-white/15" />
-
-          <div className="space-y-2 text-sm text-white/80">
-            <Line
-              label={`${cost.adults} adultos × ${formatCOP(prices.adult)}`}
-              value={formatCOP(cost.adultsCost)}
-            />
-            <Line
-              label={`${cost.children} niños × ${formatCOP(prices.child)}`}
-              value={formatCOP(cost.childrenCost)}
-            />
-          </div>
-
-          <div className="mt-5 flex items-center justify-between border-t border-white/15 pt-4">
-            <span className="flex items-center gap-2 text-sm text-white/80">
-              <UtensilsCrossed className="size-4 text-gold-light" />
-              Total estimado comida
-            </span>
-            <span className="font-serif text-3xl tabular-nums text-gold-light">
-              {formatCOP(cost.total)}
-            </span>
-          </div>
-
-          <p className="mt-3 flex items-center gap-1.5 text-xs text-white/50">
-            <Wallet className="size-3.5" />
-            Basado en {cost.guests} invitación(es) confirmada(s).
-          </p>
+        {/* Dos escenarios */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Estimado total (proyección) */}
+          <ResultCard
+            variant="projection"
+            title="Estimado total"
+            subtitle={`Si asisten todos los invitados (${projection.guests})`}
+            data={projection}
+            prices={prices}
+            footer={
+              pending > 0
+                ? `${pending} invitación(es) por confirmar`
+                : "Todos han respondido"
+            }
+          />
+          {/* Confirmado */}
+          <ResultCard
+            variant="confirmed"
+            title="Confirmado"
+            subtitle={`Invitados que ya dijeron sí (${confirmed.guests})`}
+            data={confirmed}
+            prices={prices}
+            footer="ya confirmados"
+          />
         </div>
       </div>
+    </div>
+  );
+}
+
+function ResultCard({
+  variant,
+  title,
+  subtitle,
+  data,
+  prices,
+  footer,
+}: {
+  variant: "projection" | "confirmed";
+  title: string;
+  subtitle: string;
+  data: Summary;
+  prices: Prices;
+  footer: string;
+}) {
+  const projection = variant === "projection";
+  return (
+    <div
+      className={
+        projection
+          ? "rounded-2xl bg-gradient-to-br from-twilight to-twilight-soft p-6 text-white"
+          : "rounded-2xl border border-border bg-background p-6 text-foreground"
+      }
+    >
+      <div className="flex items-center gap-2">
+        {projection ? (
+          <UtensilsCrossed className="size-4 text-gold-light" />
+        ) : (
+          <Check className="size-4 text-emerald-600" />
+        )}
+        <span className="text-xs font-semibold uppercase tracking-wider">{title}</span>
+      </div>
+      <p className={projection ? "mt-0.5 text-xs text-white/60" : "mt-0.5 text-xs text-muted-foreground"}>
+        {subtitle}
+      </p>
+
+      <div className="mt-4 flex items-end gap-2">
+        <span className="font-serif text-5xl tabular-nums leading-none">
+          {data.people}
+        </span>
+        <span className={projection ? "mb-1 text-sm text-white/70" : "mb-1 text-sm text-muted-foreground"}>
+          platos
+        </span>
+      </div>
+      <p className={projection ? "mt-1 text-sm text-white/75" : "mt-1 text-sm text-muted-foreground"}>
+        {data.adults} adultos · {data.children} niños
+      </p>
+
+      <div
+        className={
+          projection
+            ? "mt-4 flex items-center justify-between border-t border-white/15 pt-3"
+            : "mt-4 flex items-center justify-between border-t border-border pt-3"
+        }
+      >
+        <span className={projection ? "text-sm text-white/80" : "text-sm text-muted-foreground"}>
+          Total comida
+        </span>
+        <span
+          className={
+            projection
+              ? "font-serif text-2xl tabular-nums text-gold-light"
+              : "font-serif text-2xl tabular-nums text-foreground"
+          }
+        >
+          {formatCOP(data.total)}
+        </span>
+      </div>
+
+      <p className={projection ? "mt-2 text-xs text-white/50" : "mt-2 text-xs text-muted-foreground"}>
+        {data.adults} × {formatCOP(prices.adult)} + {data.children} × {formatCOP(prices.child)} · {footer}
+      </p>
     </div>
   );
 }
@@ -137,29 +205,5 @@ function PriceInput({
         />
       </div>
     </label>
-  );
-}
-
-function Stat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
-  return (
-    <div>
-      <p
-        className={`font-serif text-4xl tabular-nums leading-none ${
-          highlight ? "text-gold-light" : ""
-        }`}
-      >
-        {value}
-      </p>
-      <p className="mt-1 text-xs uppercase tracking-wider text-white/60">{label}</p>
-    </div>
-  );
-}
-
-function Line({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span>{label}</span>
-      <span className="tabular-nums">{value}</span>
-    </div>
   );
 }
