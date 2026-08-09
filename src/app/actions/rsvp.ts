@@ -16,10 +16,7 @@ export async function submitRsvp(
   const parsed = rsvpSchema.safeParse({
     token: formData.get("token"),
     attending: formData.get("attending") === "true",
-    adults: formData.get("adults") ?? 0,
-    children: formData.get("children") ?? 0,
-    message: formData.get("message") ?? "",
-    dietary: formData.get("dietary") ?? "",
+    attendees: formData.getAll("attendees").map(String),
   });
 
   if (!parsed.success) {
@@ -31,25 +28,19 @@ export async function submitRsvp(
     return { ok: false, error: "No encontramos tu invitación." };
   }
 
-  // Validación de cupos: al menos 1 adulto y sin exceder los pases permitidos
-  let adults = 0;
-  let children = 0;
-  if (parsed.data.attending) {
-    adults = Math.min(Math.max(parsed.data.adults, 1), guest.allowed_guests);
-    children = Math.min(
-      Math.max(parsed.data.children, 0),
-      guest.allowed_guests - adults
-    );
+  // Solo se aceptan nombres de la lista fija: nadie puede sumar acompañantes.
+  const allowed = new Set((guest.party ?? []).map((m) => m.name));
+  const attendees = parsed.data.attendees.filter((n) => allowed.has(n));
+
+  if (parsed.data.attending && attendees.length === 0) {
+    return { ok: false, error: "Marca al menos una persona que asistirá." };
   }
 
   try {
     await saveRsvp({
       token: parsed.data.token,
       attending: parsed.data.attending,
-      adults,
-      children,
-      message: parsed.data.message,
-      dietary: parsed.data.dietary,
+      attendees,
     });
     revalidatePath(`/i/${parsed.data.token}`);
     revalidatePath("/admin");

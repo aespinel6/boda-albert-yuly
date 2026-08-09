@@ -24,14 +24,31 @@ export function invitationUrl(token: string, baseUrl?: string): string {
   return `${base.replace(/\/$/, "")}/i/${token}`;
 }
 
-/** Mensaje de WhatsApp prellenado para un invitado. */
-export function whatsappMessage(name: string, token: string): string {
+/**
+ * Mensaje de WhatsApp prellenado, con la lista nominal de invitados
+ * para que quede claro quiénes están incluidos en la tarjeta.
+ */
+export function whatsappMessage(
+  name: string,
+  token: string,
+  party?: Array<{ name: string; kind: "adult" | "child" }>
+): string {
   const url = invitationUrl(token);
+  const members = party ?? [];
+  // El primero es el invitado principal; los demás son sus acompañantes.
+  const companions = members.slice(1);
+
+  const listado = companions.length
+    ? `Esta invitación es para:\n` +
+      members.map((m) => `• ${m.name}`).join("\n") +
+      `\n\n`
+    : "";
+
   return (
     `Hola ${firstName(name)} 😊\n\n` +
-    `Queremos invitarte a compartir uno de los días más importantes de nuestras vidas. ` +
-    `Aquí encontrarás todos los detalles y podrás confirmar tu asistencia.\n\n` +
-    `${url}\n\n` +
+    `Queremos invitarte a compartir uno de los días más importantes de nuestras vidas.\n\n` +
+    listado +
+    `Aquí encontrarás todos los detalles y podrás confirmar quiénes asistirán:\n${url}\n\n` +
     `Con cariño,\nAlbert & Yuly ❤️`
   );
 }

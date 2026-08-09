@@ -58,23 +58,34 @@ export async function saveGuest(
   id: string | null,
   formData: FormData
 ): Promise<GuestActionState> {
+  let companions: unknown = [];
+  try {
+    companions = JSON.parse(String(formData.get("companions") ?? "[]"));
+  } catch {
+    companions = [];
+  }
+
   const parsed = guestFormSchema.safeParse({
     name: formData.get("name"),
     phone: formData.get("phone") ?? "",
     group: formData.get("group") ?? "otros",
-    adults: formData.get("adults") ?? 1,
-    children: formData.get("children") ?? 0,
+    companions,
   });
 
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
+  // Teléfono colombiano: guarda con prefijo 57 si viene sin él.
+  const digits = parsed.data.phone.replace(/[^\d]/g, "");
+  const phone = digits ? (digits.startsWith("57") ? digits : "57" + digits) : "";
+
   try {
+    const payload = { ...parsed.data, phone };
     if (id) {
-      await updateGuest(id, parsed.data);
+      await updateGuest(id, payload);
     } else {
-      await createGuest(parsed.data);
+      await createGuest(payload);
     }
     revalidatePath("/admin");
     return { ok: true };

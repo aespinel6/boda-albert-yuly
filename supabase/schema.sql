@@ -17,6 +17,10 @@ create table if not exists public.guests (
   allowed_guests smallint not null default 1 check (allowed_guests between 1 and 40),
   adults         smallint not null default 1 check (adults between 0 and 20),
   children       smallint not null default 0 check (children between 0 and 20),
+  -- Lista nominal fija: [{ name, kind: 'adult'|'child', attending: bool }]
+  -- El primer elemento es el invitado principal. El invitado solo puede
+  -- confirmar personas de esta lista (no puede agregar acompañantes).
+  party          jsonb not null default '[]'::jsonb,
   token          text not null unique,
   status         text not null default 'pending'
                  check (status in ('pending','confirmed','declined')),

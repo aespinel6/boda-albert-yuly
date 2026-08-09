@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { Fragment, useMemo, useState, useTransition } from "react";
 import {
   Search, Download, MessageCircle, Check, Copy, Users2, Pencil,
+  ChevronDown, ChevronRight, Baby,
 } from "lucide-react";
 import type { Guest, GuestStatus } from "@/lib/types";
 import {
@@ -41,6 +42,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
   const [status, setStatus] = useState<StatusFilter>("all");
   const [group, setGroup] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const groups = useMemo(
@@ -62,7 +64,10 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
   }, [guests, query, status, group]);
 
   function sendWhatsapp(g: Guest) {
-    const link = whatsappLink(g.phone, whatsappMessage(g.name, g.token));
+    const link = whatsappLink(
+      g.phone,
+      whatsappMessage(g.name, g.token, g.party ?? [])
+    );
     window.open(link, "_blank", "noopener");
     if (!g.sent) startTransition(() => toggleSent(g.id, true));
   }
@@ -75,18 +80,25 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
 
   async function exportExcel() {
     const XLSX = await import("xlsx");
-    const rows = filtered.map((g) => ({
-      Nombre: g.name,
-      Teléfono: g.phone ?? "",
-      Grupo: g.group,
-      Estado: STATUS_LABEL[g.status],
-      "Cupos permitidos": g.allowed_guests,
-      Asisten: g.companions ?? "",
-      Restricción: g.dietary ?? "",
-      Mensaje: g.message ?? "",
-      Enviada: g.sent ? "Sí" : "No",
-      "Confirmó el": formatDateTime(g.confirmed_at),
-    }));
+    const rows = filtered.map((g) => {
+      const party = g.party ?? [];
+      return {
+        Nombre: g.name,
+        Teléfono: g.phone ?? "",
+        Grupo: g.group,
+        Estado: STATUS_LABEL[g.status],
+        Acompañantes: party.slice(1).map((m) => m.name).join(", "),
+        Adultos: g.adults,
+        Niños: g.children,
+        Personas: g.adults + g.children,
+        Asisten:
+          g.status === "confirmed"
+            ? party.filter((m) => m.attending).map((m) => m.name).join(", ")
+            : "",
+        Enviada: g.sent ? "Sí" : "No",
+        "Confirmó el": formatDateTime(g.confirmed_at),
+      };
+    });
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Invitados");
@@ -159,14 +171,18 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
               <th>Grupo</th>
               <th>Estado</th>
               <th className="text-center">Personas</th>
-              <th>Mensaje</th>
               <th className="text-center">Enviada</th>
               <th className="text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((g) => (
-              <tr key={g.id} className="border-t border-border/70 transition-colors hover:bg-muted/40">
+            {filtered.map((g) => {
+              const party = g.party ?? [];
+              const companions = party.slice(1);
+              const isOpen = expanded === g.id;
+              return (
+              <Fragment key={g.id}>
+              <tr className="border-t border-border/70 transition-colors hover:bg-muted/40">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <span className="flex size-9 flex-none items-center justify-center rounded-full bg-gold/15 text-xs font-semibold text-gold">
@@ -177,6 +193,19 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                       <p className="text-xs text-muted-foreground">
                         {g.phone ?? "sin teléfono"}
                       </p>
+                      {companions.length > 0 && (
+                        <button
+                          onClick={() => setExpanded(isOpen ? null : g.id)}
+                          className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-gold hover:text-gold/80"
+                        >
+                          {isOpen ? (
+                            <ChevronDown className="size-3.5" />
+                          ) : (
+                            <ChevronRight className="size-3.5" />
+                          )}
+                          {companions.length} acompañante{companions.length !== 1 && "s"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -200,9 +229,6 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                       ({g.adults}A{g.children > 0 ? ` · ${g.children}N` : ""})
                     </span>
                   </div>
-                </td>
-                <td className="max-w-[180px] truncate px-4 py-3 text-muted-foreground" title={g.message ?? ""}>
-                  {g.message || "—"}
                 </td>
                 <td className="px-4 py-3 text-center">
                   {g.sent ? (
@@ -248,10 +274,51 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                   </div>
                 </td>
               </tr>
-            ))}
+
+              {/* Desplegable: acompañantes con nombre */}
+              {isOpen && companions.length > 0 && (
+                <tr className="bg-muted/30">
+                  <td colSpan={6} className="px-4 pb-4 pt-0">
+                    <div className="ml-12 rounded-xl border border-border bg-card p-3">
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Acompañantes invitados
+                      </p>
+                      <ul className="grid gap-1.5 sm:grid-cols-2">
+                        {companions.map((m) => (
+                          <li
+                            key={m.name}
+                            className="flex items-center gap-2 text-sm text-foreground"
+                          >
+                            {m.kind === "child" ? (
+                              <Baby className="size-3.5 flex-none text-muted-foreground" />
+                            ) : (
+                              <Users2 className="size-3.5 flex-none text-muted-foreground" />
+                            )}
+                            <span className="min-w-0 flex-1 truncate">{m.name}</span>
+                            {g.status === "confirmed" && (
+                              <span
+                                className={
+                                  m.attending
+                                    ? "text-xs font-medium text-emerald-600"
+                                    : "text-xs text-muted-foreground line-through"
+                                }
+                              >
+                                {m.attending ? "asiste" : "no asiste"}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              </Fragment>
+              );
+            })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-14 text-center text-muted-foreground">
+                <td colSpan={6} className="px-4 py-14 text-center text-muted-foreground">
                   {guests.length === 0
                     ? "Aún no hay invitados. Añade el primero con el botón de arriba."
                     : "No hay invitados que coincidan con el filtro."}

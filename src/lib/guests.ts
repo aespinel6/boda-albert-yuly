@@ -3,15 +3,34 @@ import { nanoid } from "nanoid";
 import { isDemoMode } from "./utils";
 import { demoStore } from "./demo-data";
 import { createSupabaseAdmin } from "./supabase/admin";
-import type { DashboardStats, Guest, GuestGroup, RsvpInput } from "./types";
+import type {
+  DashboardStats,
+  Guest,
+  GuestGroup,
+  PartyMember,
+  RsvpInput,
+} from "./types";
 
 export interface GuestInput {
   name: string;
   phone?: string | null;
   email?: string | null;
   group: GuestGroup;
-  adults: number;
-  children: number;
+  /** Acompañantes con nombre (sin incluir al principal). */
+  companions: Array<{ name: string; kind: "adult" | "child" }>;
+}
+
+/** Arma la lista fija: principal + acompañantes, todos preseleccionados. */
+function buildParty(name: string, companions: GuestInput["companions"]) {
+  const party: PartyMember[] = [
+    { name: name.trim(), kind: "adult", attending: true },
+    ...companions
+      .filter((c) => c.name.trim())
+      .map((c) => ({ name: c.name.trim(), kind: c.kind, attending: true })),
+  ];
+  const adults = party.filter((p) => p.kind === "adult").length;
+  const children = party.filter((p) => p.kind === "child").length;
+  return { party, adults, children, allowed_guests: adults + children };
 }
 
 /**
@@ -47,21 +66,30 @@ export async function listGuests(): Promise<Guest[]> {
 }
 
 export async function saveRsvp(input: RsvpInput): Promise<Guest> {
-  const adults = input.attending ? input.adults : 0;
-  const children = input.attending ? input.children : 0;
+  const guest = await getGuestByToken(input.token);
+  if (!guest) throw new Error("Invitado no encontrado");
+
+  // Solo se aceptan nombres que ya estaban en la lista fija del invitado.
+  const chosen = new Set(input.attendees);
+  const party = (guest.party ?? []).map((m) => ({
+    ...m,
+    attending: input.attending && chosen.has(m.name),
+  }));
+
+  const going = party.filter((m) => m.attending);
+  const adults = going.filter((m) => m.kind === "adult").length;
+  const children = going.filter((m) => m.kind === "child").length;
+
   const patch = {
     status: input.attending ? ("confirmed" as const) : ("declined" as const),
+    party,
     adults,
     children,
     companions: adults + children,
-    message: input.message?.trim() || null,
-    dietary: input.dietary?.trim() || null,
     confirmed_at: new Date().toISOString(),
   };
 
   if (isDemoMode()) {
-    const guest = demoStore.findByToken(input.token);
-    if (!guest) throw new Error("Invitado no encontrado");
     const updated = demoStore.update(guest.id, patch);
     if (!updated) throw new Error("No se pudo guardar");
     return updated;
@@ -95,9 +123,7 @@ export async function createGuest(input: GuestInput): Promise<Guest> {
     phone: input.phone?.trim() || null,
     email: input.email?.trim() || null,
     group: input.group,
-    adults: input.adults,
-    children: input.children,
-    allowed_guests: input.adults + input.children,
+    ...buildParty(input.name, input.companions),
     token: nanoid(10),
   };
 
@@ -129,9 +155,7 @@ export async function updateGuest(id: string, input: GuestInput): Promise<Guest>
     phone: input.phone?.trim() || null,
     email: input.email?.trim() || null,
     group: input.group,
-    adults: input.adults,
-    children: input.children,
-    allowed_guests: input.adults + input.children,
+    ...buildParty(input.name, input.companions),
   };
 
   if (isDemoMode()) {

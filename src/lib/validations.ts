@@ -3,10 +3,8 @@ import { z } from "zod";
 export const rsvpSchema = z.object({
   token: z.string().min(1),
   attending: z.boolean(),
-  adults: z.coerce.number().int().min(0).max(40),
-  children: z.coerce.number().int().min(0).max(40),
-  message: z.string().max(500).optional().or(z.literal("")),
-  dietary: z.string().max(300).optional().or(z.literal("")),
+  /** Nombres marcados (deben existir en la lista fija del invitado). */
+  attendees: z.array(z.string().min(1)).max(40),
 });
 
 export type RsvpValues = z.infer<typeof rsvpSchema>;
@@ -20,8 +18,15 @@ export const guestFormSchema = z.object({
     .or(z.literal(""))
     .default(""),
   group: z.enum(["familia", "amigos", "trabajo", "otros"]).default("otros"),
-  adults: z.coerce.number().int().min(1, "Mínimo 1 adulto").max(20).default(1),
-  children: z.coerce.number().int().min(0).max(20).default(0),
+  companions: z
+    .array(
+      z.object({
+        name: z.string().min(1).max(120),
+        kind: z.enum(["adult", "child"]),
+      })
+    )
+    .max(20)
+    .default([]),
 });
 
 export type GuestFormValues = z.infer<typeof guestFormSchema>;

@@ -3,7 +3,7 @@
 import { useState, useTransition, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, UserPlus } from "lucide-react";
+import { X, Loader2, UserPlus, Plus, Trash2 } from "lucide-react";
 import type { Guest } from "@/lib/types";
 import { saveGuest } from "@/app/actions/admin";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ const GROUPS = [
   { value: "trabajo", label: "Trabajo" },
   { value: "otros", label: "Otros" },
 ];
+
+type Row = { name: string; kind: "adult" | "child" };
 
 export function GuestFormDialog({
   guest,
@@ -28,9 +30,23 @@ export function GuestFormDialog({
   const [pending, startTransition] = useTransition();
   const isEdit = !!guest;
 
+  // Acompañantes = party sin el principal (primer elemento)
+  const [rows, setRows] = useState<Row[]>(() =>
+    (guest?.party ?? []).slice(1).map((m) => ({ name: m.name, kind: m.kind }))
+  );
+
+  const addRow = () => setRows((r) => [...r, { name: "", kind: "adult" }]);
+  const delRow = (i: number) => setRows((r) => r.filter((_, x) => x !== i));
+  const setRow = (i: number, patch: Partial<Row>) =>
+    setRows((r) => r.map((x, n) => (n === i ? { ...x, ...patch } : x)));
+
+  const adults = 1 + rows.filter((r) => r.name.trim() && r.kind === "adult").length;
+  const children = rows.filter((r) => r.name.trim() && r.kind === "child").length;
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    formData.set("companions", JSON.stringify(rows.filter((r) => r.name.trim())));
     setError(null);
     startTransition(async () => {
       const res = await saveGuest(guest?.id ?? null, formData);
@@ -59,18 +75,19 @@ export function GuestFormDialog({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 12 }}
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl"
+                  className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="mb-5 flex items-center justify-between">
+                  <div className="mb-5 flex items-start justify-between">
                     <div>
                       <h2 className="font-serif text-2xl">
-                        {isEdit ? "Editar invitado" : "Nuevo invitado"}
+                        {isEdit ? "Editar invitación" : "Nueva invitación"}
                       </h2>
                       <p className="text-sm text-muted-foreground">
-                        {isEdit
-                          ? "Actualiza los datos del invitado."
-                          : "Se generará su enlace único automáticamente."}
+                        {adults} adulto{adults !== 1 && "s"}
+                        {children > 0 && ` · ${children} niño${children !== 1 ? "s" : ""}`}
+                        {" · "}
+                        {adults + children} persona{adults + children !== 1 && "s"}
                       </p>
                     </div>
                     <button
@@ -83,7 +100,7 @@ export function GuestFormDialog({
                   </div>
 
                   <form onSubmit={onSubmit} className="space-y-4">
-                    <Field label="Nombre completo" htmlFor="name">
+                    <Field label="Invitado principal" htmlFor="name">
                       <Input
                         id="name"
                         name="name"
@@ -94,60 +111,92 @@ export function GuestFormDialog({
                       />
                     </Field>
 
-                    <Field label="Teléfono (WhatsApp)" htmlFor="phone" hint="Con código de país, ej: 573001112233">
-                      <Input
-                        id="phone"
-                        name="phone"
-                        defaultValue={guest?.phone ?? ""}
-                        placeholder="573001112233"
-                        inputMode="tel"
-                      />
-                    </Field>
-
-                    <Field label="Grupo" htmlFor="group">
-                      <select
-                        id="group"
-                        name="group"
-                        defaultValue={guest?.group ?? "otros"}
-                        className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {GROUPS.map((g) => (
-                          <option key={g.value} value={g.value}>
-                            {g.label}
-                          </option>
-                        ))}
-                      </select>
-                    </Field>
-
                     <div className="grid grid-cols-2 gap-3">
-                      <Field label="Adultos" htmlFor="adults" hint="Mínimo 1">
+                      <Field label="Teléfono" htmlFor="phone" hint="Sin +57">
                         <Input
-                          id="adults"
-                          name="adults"
-                          type="number"
-                          min={1}
-                          max={20}
-                          defaultValue={guest?.adults ?? 1}
-                          required
+                          id="phone"
+                          name="phone"
+                          defaultValue={guest?.phone?.replace(/^57/, "") ?? ""}
+                          placeholder="3001112233"
+                          inputMode="tel"
                         />
                       </Field>
+                      <Field label="Grupo" htmlFor="group">
+                        <select
+                          id="group"
+                          name="group"
+                          defaultValue={guest?.group ?? "otros"}
+                          className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {GROUPS.map((g) => (
+                            <option key={g.value} value={g.value}>
+                              {g.label}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    </div>
 
-                      <Field label="Niños" htmlFor="children" hint="Precio reducido">
-                        <Input
-                          id="children"
-                          name="children"
-                          type="number"
-                          min={0}
-                          max={20}
-                          defaultValue={guest?.children ?? 0}
-                          required
-                        />
-                      </Field>
+                    {/* Acompañantes con nombre */}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-foreground">
+                          Acompañantes
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={addRow}
+                          className="h-7 text-xs"
+                        >
+                          <Plus className="size-3.5" /> Añadir
+                        </Button>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Solo estas personas podrán confirmar en la tarjeta.
+                      </p>
+
+                      <div className="mt-2 space-y-2">
+                        {rows.length === 0 && (
+                          <p className="rounded-lg border border-dashed border-border px-3 py-3 text-center text-xs text-muted-foreground">
+                            Sin acompañantes — va solo.
+                          </p>
+                        )}
+                        {rows.map((r, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <Input
+                              value={r.name}
+                              onChange={(e) => setRow(i, { name: e.target.value })}
+                              placeholder="Nombre del acompañante"
+                              className="flex-1"
+                            />
+                            <select
+                              value={r.kind}
+                              onChange={(e) =>
+                                setRow(i, { kind: e.target.value as Row["kind"] })
+                              }
+                              className="h-10 rounded-lg border border-input bg-background px-2 text-xs"
+                            >
+                              <option value="adult">Adulto</option>
+                              <option value="child">Niño</option>
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => delRow(i)}
+                              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-destructive"
+                              aria-label="Quitar"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     {error && <p className="text-sm text-destructive">{error}</p>}
 
-                    <div className="flex justify-end gap-2 pt-2">
+                    <div className="flex justify-end gap-2 pt-1">
                       <Button
                         type="button"
                         variant="ghost"
@@ -162,7 +211,7 @@ export function GuestFormDialog({
                         ) : (
                           <UserPlus className="size-4" />
                         )}
-                        {isEdit ? "Guardar cambios" : "Añadir invitado"}
+                        {isEdit ? "Guardar cambios" : "Añadir invitación"}
                       </Button>
                     </div>
                   </form>
