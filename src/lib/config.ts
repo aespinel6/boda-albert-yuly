@@ -35,7 +35,23 @@ export const wedding = {
   // Dedicatoria de Albert para Yuly — banner después de la portada (editable)
   dedication: {
     eyebrow: "Para ti, Yuly",
-    text: "Soy un hombre de razón. Me gusta entender cómo funciona el mundo, buscarle explicación a todo, no creer en aquello que no se puede demostrar.\n\nY entonces llegaste tú.\n\nNo creo en los milagros, pero creo en ti. Entre billones de estrellas, en un universo inmenso que no tenía ninguna obligación de cruzarnos, encontrarte fue lo más cercano a lo infinito que he conocido. Contigo el tiempo se vuelve relativo: las horas vuelan y, aun así, las quiero eternas.\n\nEres la mujer más hermosa que la vida pudo regalarme, y lo digo sabiendo que tu belleza más grande no está en las fotos, sino en cómo cuidas, en cómo sueñas, en cómo me haces mejor sin siquiera proponértelo.\n\nTe elegí con la razón y te amo con todo lo demás. Del cielo al infinito —y de regreso— volvería a elegirte en cada universo posible.\n\nGracias por decir que sí.",
+    text: [
+      "Quizá el universo no tenga respuestas para todo. Quizá algunas cosas simplemente ocurren, sin pedir permiso, sin aviso y sin explicación.",
+      "Y entre una eternidad de posibilidades, ocurrió que te encontré.",
+      "Pudimos haber nacido en otros lugares, vivir otras vidas, tomar otros caminos, coincidir con otras personas. Pero, de alguna manera, el tiempo, el espacio y todos nuestros pequeños azares tuvieron que alinearse para que un día tú y yo termináramos aquí.",
+      "Y desde que llegaste, hay una parte de mí que dejó de buscarle explicación a ciertas cosas.",
+      "Porque hay miradas que detienen el tiempo. Hay abrazos que hacen que el mundo parezca más pequeño. Hay personas que llegan a tu vida y, sin hacer ruido, consiguen convertirse en hogar.",
+      "Tú eres eso para mí.",
+      "Eres la mujer que admiro cuando te miro, pero, sobre todo, la mujer que admiro cuando nadie está mirando. La que cuida, la que sueña, la que ríe, la que lucha, la que ama. La que, sin siquiera proponérselo, ha hecho de mí alguien mejor.",
+      "Y quizá eso sea el amor: encontrar a alguien que no solo quieres para compartir la vida, sino alguien con quien la vida adquiere un significado distinto.",
+      "Porque el tiempo contigo nunca parece suficiente. Las horas se vuelven instantes, los instantes se vuelven recuerdos, y los recuerdos terminan siendo esas pequeñas eternidades que uno guarda para siempre.",
+      "Así que, si alguna vez existieron infinitos caminos posibles, me alegra profundamente haber llegado por el que terminaba en ti.",
+      "Y si pudiera volver al principio, conociendo todo lo que sé hoy, volvería a encontrarte.",
+      "En cualquier tiempo. En cualquier lugar. En cualquier universo.",
+      "Te volvería a elegir. Una y mil veces.",
+      "Porque entre todo lo inmenso que existe allá afuera, tú terminaste siendo mi infinito.",
+      "Gracias por elegirme. Gracias por caminar conmigo. Y, sobre todo, gracias por decir que sí.",
+    ].join("\n\n"),
     signature: "Albert",
   },
 
@@ -57,6 +73,12 @@ export const wedding = {
     mapsUrl:
       "https://www.google.com/maps/search/?api=1&query=La+Ramona+Restaurante%2C+Av.+Las+Palmas+%234-22%2C+Fusagasug%C3%A1%2C+Cundinamarca",
     calendarUrl: "https://calendar.app.google/z1DmP9ze17mBiVAy5",
+  },
+
+  // Música de fondo de la invitación
+  music: {
+    src: "/audio/cancion.mp3",
+    title: "Siempre Te Voy a Querer — Jhon Onofre",
   },
 
   // Transmisión / reunión virtual para invitados a distancia

@@ -60,28 +60,36 @@ export function Hero() {
       {/* Scrim para legibilidad del texto */}
       <div className="absolute inset-0 z-[2] bg-gradient-to-t from-twilight/90 via-twilight/45 to-twilight/60" />
 
-      {/* Frase */}
+      {/* Carta: encabezado y firma fijos, el texto se desplaza dentro */}
       <motion.figure
         initial={reduce ? false : { opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 mx-auto max-w-2xl px-8 text-center text-white [text-shadow:0_2px_16px_rgba(15,20,30,0.55)]"
+        className="relative z-10 flex h-full max-w-2xl flex-col px-8 pb-24 pt-14 text-center text-white [text-shadow:0_2px_16px_rgba(15,20,30,0.55)] sm:pb-28"
       >
-        <p className="eyebrow text-gold-light">{wedding.dedication.eyebrow}</p>
-        <blockquote className="mt-4 space-y-2.5 font-serif text-[15px] font-light italic leading-relaxed [text-wrap:balance] sm:text-lg sm:leading-relaxed">
-          {wedding.dedication.text.split(/\n\n+/).map((para, i, arr) => (
-            <p key={i}>
-              {i === 0 && "“"}
-              {para}
-              {i === arr.length - 1 && "”"}
-            </p>
-          ))}
-        </blockquote>
-        <div className="horizon my-5" />
-        <figcaption className="font-serif text-base italic text-gold-light">
-          — {wedding.dedication.signature}
-        </figcaption>
+        <p className="eyebrow flex-none text-gold-light">
+          {wedding.dedication.eyebrow}
+        </p>
+
+        <div className="carta-scroll mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <blockquote className="space-y-3 font-serif text-[15px] font-light italic leading-relaxed [text-wrap:pretty] sm:text-lg sm:leading-relaxed">
+            {wedding.dedication.text.split(/\n\n+/).map((para, i, arr) => (
+              <p key={i}>
+                {i === 0 && "“"}
+                {para}
+                {i === arr.length - 1 && "”"}
+              </p>
+            ))}
+          </blockquote>
+        </div>
+
+        <div className="flex-none">
+          <div className="horizon my-4" />
+          <figcaption className="font-serif text-base italic text-gold-light">
+            — {wedding.dedication.signature}
+          </figcaption>
+        </div>
       </motion.figure>
 
       <ScrollDownButton label="Sigue" tone="light" />

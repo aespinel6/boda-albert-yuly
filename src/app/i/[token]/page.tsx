@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getGuestByToken } from "@/lib/guests";
+import { MusicPlayer } from "@/components/invitation/music-player";
 import { Cover } from "@/components/invitation/cover";
 import { Hero } from "@/components/invitation/hero";
 import { Couple } from "@/components/invitation/couple";
@@ -34,6 +35,7 @@ export default async function InvitationPage({
 
   return (
     <main className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-y-none bg-twilight-deep">
+      <MusicPlayer />
       <Cover />
       <Hero />
       <Couple />

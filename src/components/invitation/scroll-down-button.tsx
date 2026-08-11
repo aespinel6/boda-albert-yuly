@@ -28,7 +28,37 @@ export function ScrollDownButton({
   function go(e: React.MouseEvent<HTMLButtonElement>) {
     const section = e.currentTarget.closest("section");
     const next = section?.nextElementSibling as HTMLElement | null;
-    next?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const scroller = section?.parentElement as HTMLElement | null;
+    if (!next || !scroller) return;
+
+    // El scroll lo maneja el contenedor de pantallas (<main>).
+    // El desplazamiento suave nativo se cancela con scroll-snap obligatorio,
+    // así que lo animamos a mano (y desactivamos el snap mientras dura).
+    const from = scroller.scrollTop;
+    const to = next.offsetTop;
+    if (Math.abs(to - from) < 2) return;
+
+    const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (quieto) {
+      scroller.scrollTop = to;
+      return;
+    }
+
+    const snapPrevio = scroller.style.scrollSnapType;
+    scroller.style.scrollSnapType = "none";
+    const inicio = Date.now();
+    const dur = 620;
+
+    const timer = setInterval(() => {
+      const p = Math.min((Date.now() - inicio) / dur, 1);
+      const suave = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      scroller.scrollTop = from + (to - from) * suave;
+      if (p >= 1) {
+        clearInterval(timer);
+        scroller.scrollTop = to;
+        scroller.style.scrollSnapType = snapPrevio;
+      }
+    }, 16);
   }
 
   return (

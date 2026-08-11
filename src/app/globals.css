@@ -78,6 +78,29 @@
   }
 }
 
+/* Carta de la dedicatoria: se desplaza dentro de su pantalla.
+   Los bordes se desvanecen para insinuar que hay más texto. */
+.carta-scroll {
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 22px,
+    #000 calc(100% - 26px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 22px,
+    #000 calc(100% - 26px),
+    transparent 100%
+  );
+}
+.carta-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Lluvia de sobres — sobres dorados cayendo suavemente */
 @keyframes envelope-fall {
   0% {
