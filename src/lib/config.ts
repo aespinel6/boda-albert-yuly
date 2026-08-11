@@ -50,10 +50,11 @@ export const wedding = {
 
   reception: {
     title: "Recepción",
-    place: "Alma Jardín",
+    place: "La Ramona Restaurante",
     time: "6:00 PM",
-    address: "Dirección del salón",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Alma+Jardin",
+    address: "Av. Las Palmas #4-22, Fusagasugá",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=La+Ramona+Restaurante%2C+Av.+Las+Palmas+%234-22%2C+Fusagasug%C3%A1%2C+Cundinamarca",
     calendarUrl: "https://calendar.app.google/z1DmP9ze17mBiVAy5",
   },
 

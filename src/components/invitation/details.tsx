@@ -19,7 +19,7 @@ export function Details() {
         </Reveal>
 
         <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:max-w-3xl sm:flex-row">
-          {items.map(({ Icon, title, place, time, mapsUrl, calendarUrl }, i) => (
+          {items.map(({ Icon, title, place, time, address, mapsUrl, calendarUrl }, i) => (
             <Reveal key={title} delay={i * 0.1} className="sm:flex-1">
               <div className="flex h-full items-start gap-4 rounded-2xl border border-twilight/10 bg-white p-4 text-left shadow-sm sm:flex-col sm:items-center sm:p-6 sm:text-center">
                 <span className="flex size-11 flex-none items-center justify-center rounded-full bg-gold/10 text-gold sm:size-12">
@@ -33,6 +33,7 @@ export function Details() {
                   <p className="mt-1.5 inline-flex items-center gap-1 text-sm text-twilight/70">
                     <Clock className="size-3.5" /> {time}
                   </p>
+                  <p className="mt-0.5 text-xs text-twilight/55">{address}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm sm:justify-center">
                     <a
                       href={mapsUrl}
