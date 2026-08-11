@@ -59,9 +59,8 @@ export const wedding = {
 
   // Transmisión / reunión virtual para invitados a distancia
   meet: {
-    // Reemplaza con el enlace real de tu Google Meet cuando lo tengas
-    url: "https://meet.google.com/xxx-xxxx-xxx",
-    time: "4:00 PM (hora de Colombia)",
+    url: "https://meet.google.com/pdi-ocwg-ock",
+    time: "4:00 – 6:00 PM (hora de Colombia)",
     note: "¿No puedes acompañarnos en persona? Únete a la transmisión de la ceremonia por Google Meet y celebremos juntos, estés donde estés.",
   },
 
