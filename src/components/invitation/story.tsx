@@ -17,7 +17,7 @@ export function Story() {
 
 function StoryChapter({ item, index }: { item: StoryItem; index: number }) {
   return (
-    <section className="snap-start flex min-h-[100svh] flex-col justify-center bg-salt-50 py-12 text-twilight">
+    <section className="snap-start flex h-full flex-col justify-center bg-salt-50 py-12 text-twilight">
       <div className="container">
         <Reveal className="mx-auto max-w-sm">
           {/* Marcador de capítulo — la historia sí es una secuencia */}

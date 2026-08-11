@@ -34,7 +34,7 @@ export function Gallery() {
   }, [open, close, prev, next]);
 
   return (
-    <section className="snap-start flex min-h-[100svh] flex-col justify-center bg-twilight-deep py-16">
+    <section className="snap-start flex h-full flex-col justify-center bg-twilight-deep py-16">
       <div className="container">
         <Reveal className="text-center text-salt-100">
           <p className="eyebrow">Galería</p>

@@ -8,7 +8,7 @@ import { Reveal } from "./reveal";
 
 export function Closing({ token }: { token: string }) {
   return (
-    <section className="snap-start flex min-h-[100svh] flex-col justify-center bg-salt-100 py-16 text-twilight">
+    <section className="snap-start flex h-full flex-col justify-center bg-salt-100 py-16 text-twilight">
       <div className="container text-center">
         <Reveal>
           <div className="relative mx-auto h-32 w-32 sm:h-44 sm:w-44">

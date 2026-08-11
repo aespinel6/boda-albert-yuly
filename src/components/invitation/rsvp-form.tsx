@@ -270,7 +270,7 @@ function RsvpShell({ children }: { children: React.ReactNode }) {
   return (
     <section
       id="rsvp"
-      className="snap-start relative flex min-h-[100svh] items-center justify-center overflow-hidden py-16"
+      className="snap-start relative flex h-full items-center justify-center overflow-hidden py-16"
     >
       <Image
         src="/photos/kiss-golden.jpeg"

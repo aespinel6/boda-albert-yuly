@@ -14,7 +14,7 @@ export function Cover() {
 
   return (
     <section
-      className="snap-start relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-6 text-center"
+      className="snap-start relative flex h-full flex-col items-center justify-center overflow-hidden px-6 text-center"
       style={{
         background:
           "radial-gradient(circle at 50% 42%, #f4eee4 0%, #efe8dd 55%, #e8e0d6 100%)",

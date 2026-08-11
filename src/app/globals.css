@@ -113,12 +113,11 @@
 
 html {
   scroll-behavior: smooth;
-  /* Cada sección de la invitación (con .snap-start) ocupa una pantalla y
-     el scroll "para" en cada una al deslizar (móvil). Proximity = suave. */
-  scroll-snap-type: y proximity;
 }
 
-/* Secciones a pantalla completa que actúan como "paso" */
+/* La invitación usa un contenedor propio con scroll (main): cada sección
+   ocupa exactamente una pantalla y el scroll SIEMPRE para en la siguiente.
+   Así la barra del navegador móvil no deja asomar la sección de abajo. */
 .snap-start {
   scroll-snap-align: start;
   scroll-snap-stop: always;

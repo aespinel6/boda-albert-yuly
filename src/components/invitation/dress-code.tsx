@@ -7,7 +7,7 @@ export function DressCode() {
   const { label, avoid, tip } = wedding.dressCode;
 
   return (
-    <section className="snap-start relative flex min-h-[100svh] flex-col justify-center overflow-hidden bg-twilight-deep py-16 text-salt-100">
+    <section className="snap-start relative flex h-full flex-col justify-center overflow-hidden bg-twilight-deep py-16 text-salt-100">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"

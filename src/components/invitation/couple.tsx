@@ -60,7 +60,7 @@ function PersonSection({
   return (
     <section
       id={person.id}
-      className="snap-start relative flex min-h-[100svh] items-center overflow-hidden bg-salt-50 py-8 text-twilight"
+      className="snap-start relative flex h-full items-center overflow-hidden bg-salt-50 py-8 text-twilight"
     >
       <div className="container">
         <Reveal>

@@ -10,7 +10,7 @@ const items = [
 
 export function Details() {
   return (
-    <section className="snap-start flex min-h-[100svh] flex-col justify-center bg-salt-100 py-16 text-twilight">
+    <section className="snap-start flex h-full flex-col justify-center bg-salt-100 py-16 text-twilight">
       <div className="container">
         <Reveal className="text-center">
           <p className="eyebrow">El evento</p>

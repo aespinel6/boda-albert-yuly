@@ -37,7 +37,7 @@ export function Countdown() {
   }, []);
 
   return (
-    <section className="snap-start relative flex min-h-[100svh] flex-col justify-center overflow-hidden bg-twilight-deep py-16 text-salt-100">
+    <section className="snap-start relative flex h-full flex-col justify-center overflow-hidden bg-twilight-deep py-16 text-salt-100">
       {/* Resplandor dorado de fondo */}
       <div
         aria-hidden

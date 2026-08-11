@@ -19,7 +19,7 @@ export function Gifts() {
   const { title, detail, note } = wedding.gifts.envelope;
 
   return (
-    <section className="snap-start relative flex min-h-[100svh] flex-col justify-center overflow-hidden bg-salt-50 py-16 text-twilight">
+    <section className="snap-start relative flex h-full flex-col justify-center overflow-hidden bg-salt-50 py-16 text-twilight">
       {/* Lluvia de sobres */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         {RAIN.map((e, i) => (

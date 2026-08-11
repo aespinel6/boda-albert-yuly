@@ -24,7 +24,7 @@ export function Hero() {
   return (
     <section
       ref={ref}
-      className="snap-start relative flex h-[100svh] min-h-[520px] w-full items-center justify-center overflow-hidden bg-twilight"
+      className="snap-start relative flex h-full w-full items-center justify-center overflow-hidden bg-twilight"
     >
       {/* Fondo desenfocado (llena el ancho; el blur oculta la baja resolución) */}
       <div className="absolute inset-0 z-0">

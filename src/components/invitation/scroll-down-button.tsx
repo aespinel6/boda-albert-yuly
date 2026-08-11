@@ -37,11 +37,11 @@ export function ScrollDownButton({
       onClick={go}
       aria-label={label || "Bajar a la siguiente sección"}
       className={cn(
-        "z-20 flex flex-col items-center gap-2 transition-colors",
+        "z-20 flex flex-col items-center gap-3.5 transition-colors",
         color,
         variant === "float"
-          ? "absolute bottom-7 left-1/2 -translate-x-1/2"
-          : "mx-auto mt-6"
+          ? "absolute bottom-[max(1.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2"
+          : "mx-auto mt-7"
       )}
     >
       {label && (

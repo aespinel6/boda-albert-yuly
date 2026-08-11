@@ -33,7 +33,7 @@ export default async function InvitationPage({
   if (!guest) notFound();
 
   return (
-    <main className="bg-twilight-deep">
+    <main className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-y-none bg-twilight-deep">
       <Cover />
       <Hero />
       <Couple />

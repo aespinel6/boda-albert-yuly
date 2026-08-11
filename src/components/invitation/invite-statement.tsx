@@ -6,7 +6,7 @@ import { ScrollDownButton } from "./scroll-down-button";
 /** Invitación formal: tarjeta enmarcada sobre la foto de la silueta. */
 export function InviteStatement() {
   return (
-    <section className="snap-start relative flex min-h-[100svh] items-center justify-center overflow-hidden py-16">
+    <section className="snap-start relative flex h-full items-center justify-center overflow-hidden py-16">
       {/* Foto de fondo */}
       <Image
         src="/photos/silhouette.jpeg"
