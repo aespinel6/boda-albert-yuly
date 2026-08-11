@@ -124,8 +124,11 @@ export function RsvpForm({ guest }: { guest: Guest }) {
           Hola, {firstName(guest.name)} 👋
         </h2>
         <p className="mt-3 text-salt-200/90">¿Nos acompañarás en este día tan especial?</p>
-        <p className="mt-1 text-xs text-salt-200/60">
-          Por favor confirma antes del {wedding.rsvpDeadline.display}
+        <p className="mt-2 text-xs text-gold-light">
+          Confirma antes del {wedding.rsvpDeadline.display}
+        </p>
+        <p className="mx-auto mt-1 max-w-sm text-xs text-salt-200/55">
+          {wedding.rsvpDeadline.note}
         </p>
 
         <form action={formAction} className="mx-auto mt-7 w-full max-w-md">

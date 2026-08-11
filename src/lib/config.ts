@@ -91,8 +91,9 @@ export const wedding = {
 
   // Fecha límite para confirmar asistencia
   rsvpDeadline: {
-    iso: "2026-09-01",
-    display: "1 de septiembre de 2026",
+    iso: "2026-09-18",
+    display: "18 de septiembre de 2026",
+    note: "Si no recibimos tu confirmación en esa fecha, entenderemos que no podrás acompañarnos.",
   },
 
   story: [
@@ -100,19 +101,35 @@ export const wedding = {
       title: "Un café que lo cambió todo",
       date: "Marzo de 2022",
       text: "Un café. Eso fue todo lo que hizo falta. Lo que parecía una charla cualquiera se volvió de esas que uno no quiere terminar: las risas que llegan solas, las horas que se escapan sin permiso, las palabras que de pronto sobran. Ninguno lo supo esa tarde, pero ahí —entre dos tazas y mil historias— dos caminos que venían andando por separado decidieron volverse uno solo.",
-      photo: "/photos/historia-1-conocimos.jpg",
+      photos: [
+        "/photos/c1-a.jpg",
+        "/photos/c1-b.jpg",
+        "/photos/c1-c.jpg",
+        "/photos/c1-d.jpg",
+      ],
     },
     {
       title: "20.000 kilómetros de nosotros",
       date: "Perú · Chile · Bolivia · Ecuador",
       text: "Una moto, dos cascos y el mundo por delante. Cruzamos Perú, Chile, Bolivia y Ecuador: veinte mil kilómetros de carretera, de amaneceres que no caben en una foto y de noches en las que el cielo fue nuestro techo. Aprendimos a leernos sin hablar, a reírnos de la lluvia, a sostenernos cuando el mapa se acababa. Y descubrimos algo que ya no se nos olvida: el destino importa mucho menos que la persona que va contigo.",
-      photo: "/photos/historia-2-viaje.jpg",
+      photos: [
+        "/photos/c2-a.jpg",
+        "/photos/c2-b.jpg",
+        "/photos/c2-c.jpg",
+        "/photos/c2-d.jpg",
+        "/photos/c2-e.jpg",
+      ],
     },
     {
       title: "El sí que esperábamos",
       date: "31 de diciembre de 2025",
       text: "El último día de un año que nos regaló de todo. Llegó a mi casa con mariachis, con el corazón en la mano y con la pregunta que yo llevaba soñando en silencio. Y el mundo entero se quedó callado. Entre lágrimas, música y un abrazo que no quería soltar, dije que sí. Así, justo cuando un año terminaba, empezaba para siempre el resto de nuestra vida.",
-      photo: "/photos/historia-3-compromiso.jpg",
+      photos: [
+        "/photos/c3-a.jpg",
+        "/photos/c3-b.jpg",
+        "/photos/c3-c.jpg",
+        "/photos/c3-d.jpg",
+      ],
     },
   ],
 
