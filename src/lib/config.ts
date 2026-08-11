@@ -43,8 +43,9 @@ export const wedding = {
     title: "Ceremonia religiosa",
     place: "Parroquia Sagrado Corazón",
     time: "4:00 PM",
-    address: "Dirección de la parroquia",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Parroquia+Sagrado+Corazon",
+    address: "Transversal 2E, Cra. 6 #122, La Serena, Fusagasugá",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Parroquia+Sagrado+Coraz%C3%B3n%2C+Transversal+2E+Cra+6+%23122%2C+La+Serena%2C+Fusagasug%C3%A1%2C+Cundinamarca",
     calendarUrl: "https://calendar.app.google/SbR5b7QVhkmUtroa9",
   },
 
@@ -99,27 +100,29 @@ export const wedding = {
       title: "Un café que lo cambió todo",
       date: "Marzo de 2022",
       text: "Un café. Eso fue todo lo que hizo falta. Lo que parecía una charla cualquiera se volvió de esas que uno no quiere terminar: las risas que llegan solas, las horas que se escapan sin permiso, las palabras que de pronto sobran. Ninguno lo supo esa tarde, pero ahí —entre dos tazas y mil historias— dos caminos que venían andando por separado decidieron volverse uno solo.",
-      photo: "/photos/wine-sunset.jpeg",
+      photo: "/photos/historia-1-conocimos.jpg",
     },
     {
       title: "20.000 kilómetros de nosotros",
       date: "Perú · Chile · Bolivia · Ecuador",
       text: "Una moto, dos cascos y el mundo por delante. Cruzamos Perú, Chile, Bolivia y Ecuador: veinte mil kilómetros de carretera, de amaneceres que no caben en una foto y de noches en las que el cielo fue nuestro techo. Aprendimos a leernos sin hablar, a reírnos de la lluvia, a sostenernos cuando el mapa se acababa. Y descubrimos algo que ya no se nos olvida: el destino importa mucho menos que la persona que va contigo.",
-      photo: "/photos/hero-couple.jpeg",
+      photo: "/photos/historia-2-viaje.jpg",
     },
     {
       title: "El sí que esperábamos",
       date: "31 de diciembre de 2025",
       text: "El último día de un año que nos regaló de todo. Llegó a mi casa con mariachis, con el corazón en la mano y con la pregunta que yo llevaba soñando en silencio. Y el mundo entero se quedó callado. Entre lágrimas, música y un abrazo que no quería soltar, dije que sí. Así, justo cuando un año terminaba, empezaba para siempre el resto de nuestra vida.",
-      photo: "/photos/silhouette.jpeg",
+      photo: "/photos/historia-3-compromiso.jpg",
     },
   ],
 
   gallery: [
+    { src: "/photos/gal-brindis.jpg", alt: "Brindis al atardecer en el Salar de Uyuni" },
+    { src: "/photos/gal-montana.jpg", alt: "Montaña de Colores, Perú" },
+    { src: "/photos/gal-copas.jpg", alt: "Copas frente al atardecer" },
+    { src: "/photos/gal-machupicchu.jpg", alt: "Machu Picchu" },
+    { src: "/photos/gal-beso-salar.jpg", alt: "Beso sobre el espejo del Salar" },
     { src: "/photos/hero-couple.jpeg", alt: "Albert y Yuly en el Salar de Uyuni" },
-    { src: "/photos/kiss-golden.jpeg", alt: "Beso al atardecer" },
-    { src: "/photos/silhouette.jpeg", alt: "Silueta al atardecer" },
-    { src: "/photos/wine-sunset.jpeg", alt: "Copa con el atardecer" },
   ],
 
   contact: {

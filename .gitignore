@@ -34,3 +34,8 @@ yarn-error.log*
 # archivos originales de WhatsApp (ya copiados a public/photos)
 WhatsApp Image*.jpeg
 WhatsApp Video*.mp4
+
+# carpeta de originales sin procesar (no se despliega)
+IMAGENES/
+Novia.png
+novio.png
