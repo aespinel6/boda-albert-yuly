@@ -11,6 +11,8 @@ interface Person {
   name: string;
   bio: string;
   photo: string;
+  /** Encuadre del rostro (object-position) al recortar al marco vertical. */
+  photoPosition: string;
 }
 
 export function Couple() {
@@ -20,6 +22,7 @@ export function Couple() {
     name: wedding.couple.groom,
     bio: wedding.couple.groomBio,
     photo: wedding.couple.groomPhoto,
+    photoPosition: wedding.couple.groomPhotoPosition,
   };
   const bride: Person = {
     id: "novia",
@@ -27,6 +30,7 @@ export function Couple() {
     name: wedding.couple.bride,
     bio: wedding.couple.brideBio,
     photo: wedding.couple.bridePhoto,
+    photoPosition: wedding.couple.bridePhotoPosition,
   };
 
   return (
@@ -109,6 +113,7 @@ function Portrait({ person }: { person: Person }) {
           fill
           sizes="(max-width: 640px) 80vw, 320px"
           className="object-cover"
+          style={{ objectPosition: person.photoPosition }}
         />
       ) : (
         // Imagen de referencia (reemplazar por la foto real)

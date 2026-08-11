@@ -17,8 +17,11 @@ export const wedding = {
       "Me gustan las aventuras, la buena comida, las sonrisas sinceras y tener tranquilidad. Entre aprendizajes, sueños y una buena dosis de terquedad, he descubierto que las cosas más bonitas suceden cuando nos atrevemos a dar un paso más. Él es mi impulso para crecer y mi calma para permanecer.\n\nDios cruzó nuestros caminos con aquel café y, desde entonces, mi lugar favorito ha sido a su lado. Hoy, a un paso de convertirse en mi esposo, quiero seguir caminando de su mano, preparándole el café como le gusta, encontrando refugio en sus besos y construyendo juntos la vida con la que siempre hemos soñado.",
     // Deja vacío para mostrar una imagen de referencia. Cuando tengas las
     // fotos, ponlas en public/photos/ y escribe aquí la ruta, ej: "/photos/novio.jpg"
-    groomPhoto: "",
-    bridePhoto: "",
+    groomPhoto: "/photos/novio.png",
+    bridePhoto: "/photos/novia.png",
+    // Encuadre del rostro dentro del marco vertical (object-position CSS)
+    groomPhotoPosition: "38% 25%",
+    bridePhotoPosition: "66% 25%",
   },
 
   // Fecha y hora del evento (zona horaria de Colombia, UTC-5)
