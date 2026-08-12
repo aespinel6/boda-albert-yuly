@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { isDemoMode } from "./utils";
 import { demoStore } from "./demo-data";
 import { createSupabaseAdmin } from "./supabase/admin";
+import { defaultMealFor } from "./pricing";
 import type {
   DashboardStats,
   Guest,
@@ -16,17 +17,35 @@ export interface GuestInput {
   phone?: string | null;
   email?: string | null;
   group: GuestGroup;
+  /** Mesa asignada en el salón. */
+  table_name?: string | null;
+  /** Plato del invitado principal. */
+  meal?: string;
   /** Acompañantes con nombre (sin incluir al principal). */
-  companions: Array<{ name: string; kind: "adult" | "child" }>;
+  companions: Array<{ name: string; kind: "adult" | "child"; meal?: string }>;
 }
 
 /** Arma la lista fija: principal + acompañantes, todos preseleccionados. */
-function buildParty(name: string, companions: GuestInput["companions"]) {
+function buildParty(
+  name: string,
+  companions: GuestInput["companions"],
+  meal?: string
+) {
   const party: PartyMember[] = [
-    { name: name.trim(), kind: "adult", attending: true },
+    {
+      name: name.trim(),
+      kind: "adult",
+      attending: true,
+      meal: meal || defaultMealFor("adult"),
+    },
     ...companions
       .filter((c) => c.name.trim())
-      .map((c) => ({ name: c.name.trim(), kind: c.kind, attending: true })),
+      .map((c) => ({
+        name: c.name.trim(),
+        kind: c.kind,
+        attending: true,
+        meal: c.meal || defaultMealFor(c.kind),
+      })),
   ];
   const adults = party.filter((p) => p.kind === "adult").length;
   const children = party.filter((p) => p.kind === "child").length;
@@ -131,7 +150,8 @@ export async function createGuest(input: GuestInput): Promise<Guest> {
     phone: input.phone?.trim() || null,
     email: input.email?.trim() || null,
     group: input.group,
-    ...buildParty(input.name, input.companions),
+    ...buildParty(input.name, input.companions, input.meal),
+    table_name: input.table_name?.trim() || null,
     token: nanoid(10),
   };
 
@@ -163,7 +183,8 @@ export async function updateGuest(id: string, input: GuestInput): Promise<Guest>
     phone: input.phone?.trim() || null,
     email: input.email?.trim() || null,
     group: input.group,
-    ...buildParty(input.name, input.companions),
+    ...buildParty(input.name, input.companions, input.meal),
+    table_name: input.table_name?.trim() || null,
   };
 
   if (isDemoMode()) {
@@ -181,6 +202,24 @@ export async function updateGuest(id: string, input: GuestInput): Promise<Guest>
     .single();
   if (error) throw new Error(error.message);
   return data as Guest;
+}
+
+/** Asigna la mesa (edición rápida desde la tabla). */
+export async function updateGuestTable(
+  id: string,
+  table_name: string | null
+): Promise<void> {
+  const value = table_name?.trim() || null;
+  if (isDemoMode()) {
+    demoStore.update(id, { table_name: value });
+    return;
+  }
+  const supabase = createSupabaseAdmin();
+  const { error } = await supabase
+    .from("guests")
+    .update({ table_name: value })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 /** Cambia solo el grupo (edición rápida desde la tabla). */

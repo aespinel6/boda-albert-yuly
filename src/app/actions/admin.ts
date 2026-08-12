@@ -14,6 +14,7 @@ import {
   createGuest,
   updateGuest,
   updateGuestGroup,
+  updateGuestTable,
   deleteGuest,
   markSent,
 } from "@/lib/guests";
@@ -65,6 +66,13 @@ export async function setGuestGroup(id: string, group: string) {
   return { ok: true as const };
 }
 
+/** Asignación rápida de mesa desde la tabla. */
+export async function setGuestTable(id: string, table: string) {
+  await updateGuestTable(id, table || null);
+  revalidatePath("/admin");
+  return { ok: true as const };
+}
+
 export type GuestActionState = { ok: boolean; error?: string };
 
 export async function saveGuest(
@@ -82,6 +90,8 @@ export async function saveGuest(
     name: formData.get("name"),
     phone: formData.get("phone") ?? "",
     group: formData.get("group") ?? "otros",
+    table_name: formData.get("table_name") ?? "",
+    meal: formData.get("meal") ?? "",
     companions,
   });
 

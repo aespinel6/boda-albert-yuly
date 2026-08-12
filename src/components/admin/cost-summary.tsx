@@ -170,8 +170,28 @@ function ResultCard({
         </span>
       </div>
 
+      {/* Desglose por tipo de plato */}
+      {data.byMeal.length > 0 && (
+        <ul
+          className={
+            projection
+              ? "mt-3 space-y-1 border-t border-white/15 pt-3 text-xs text-white/75"
+              : "mt-3 space-y-1 border-t border-border pt-3 text-xs text-muted-foreground"
+          }
+        >
+          {data.byMeal.map((m) => (
+            <li key={m.id} className="flex items-center justify-between gap-3">
+              <span className="min-w-0 truncate">
+                {m.count} × {m.label}
+              </span>
+              <span className="flex-none tabular-nums">{formatCOP(m.total)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <p className={projection ? "mt-2 text-xs text-white/50" : "mt-2 text-xs text-muted-foreground"}>
-        {data.adults} × {formatCOP(prices.adult)} + {data.children} × {formatCOP(prices.child)} · {footer}
+        {footer}
       </p>
     </div>
   );

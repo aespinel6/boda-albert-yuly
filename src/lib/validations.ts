@@ -18,11 +18,14 @@ export const guestFormSchema = z.object({
     .or(z.literal(""))
     .default(""),
   group: z.enum(["familia", "amigos", "trabajo", "otros"]).default("otros"),
+  table_name: z.string().max(60).optional().or(z.literal("")).default(""),
+  meal: z.string().max(30).optional().or(z.literal("")).default(""),
   companions: z
     .array(
       z.object({
         name: z.string().min(1).max(120),
         kind: z.enum(["adult", "child"]),
+        meal: z.string().max(30).optional().default(""),
       })
     )
     .max(20)

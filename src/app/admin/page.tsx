@@ -4,6 +4,7 @@ import { isDemoMode } from "@/lib/utils";
 import { StatsCards } from "@/components/admin/stats-cards";
 import { GuestsTable } from "@/components/admin/guests-table";
 import { CostSummary } from "@/components/admin/cost-summary";
+import { TablesBoard } from "@/components/admin/tables-board";
 import { GuestFormDialog } from "@/components/admin/guest-form-dialog";
 import { Button } from "@/components/ui/button";
 
@@ -42,6 +43,7 @@ export default async function AdminDashboard() {
       <StatsCards stats={stats} />
       <GuestsTable guests={guests} />
       <CostSummary guests={guests} />
+      <TablesBoard guests={guests} />
     </div>
   );
 }

@@ -111,6 +111,37 @@ export const wedding = {
     child: 30000,
   },
 
+  // ── Organización del salón ────────────────────────────────────
+  // Mesas disponibles. Edita, agrega o quita libremente: el panel
+  // muestra exactamente esta lista al asignar mesa a cada invitación.
+  tables: [
+    "Mesa principal",
+    "Mesa 1",
+    "Mesa 2",
+    "Mesa 3",
+    "Mesa 4",
+    "Mesa 5",
+    "Mesa 6",
+    "Mesa 7",
+    "Mesa 8",
+    "Mesa 9",
+    "Mesa 10",
+    "Mesa 11",
+    "Mesa 12",
+    "Mesa 13",
+    "Mesa 14",
+    "Mesa 15",
+  ],
+
+  // Tipos de plato. `price` se usa para el presupuesto; `default` marca
+  // cuál se asigna automáticamente a cada adulto o niño nuevo.
+  meals: [
+    { id: "adulto", label: "Plato adulto principal", price: 50000, for: "adult", default: true },
+    { id: "a", label: "Plato A", price: 55000, for: "adult", default: false },
+    { id: "b", label: "Plato B", price: 60000, for: "adult", default: false },
+    { id: "nino", label: "Plato niño", price: 30000, for: "child", default: true },
+  ],
+
   // Fecha límite para confirmar asistencia
   rsvpDeadline: {
     iso: "2026-09-18",

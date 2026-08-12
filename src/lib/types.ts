@@ -9,6 +9,8 @@ export interface PartyMember {
   kind: "adult" | "child";
   /** Si asistirá. Antes de confirmar todos vienen en true (preseleccionados). */
   attending: boolean;
+  /** Id del plato asignado (ver `wedding.meals`). Si falta, se usa el de por defecto. */
+  meal?: string;
 }
 
 /** Fila de la tabla `guests` en Supabase */
@@ -23,6 +25,8 @@ export interface Guest {
   children: number; // niños en el grupo del invitado
   /** Lista nominal fija: quiénes están invitados (principal + acompañantes). */
   party: PartyMember[];
+  /** Mesa asignada en el salón (ver `wedding.tables`). */
+  table_name: string | null;
   token: string;
   status: GuestStatus;
   sent: boolean; // invitación enviada por WhatsApp

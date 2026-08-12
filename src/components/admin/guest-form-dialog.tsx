@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, UserPlus, Plus, Trash2 } from "lucide-react";
 import type { Guest } from "@/lib/types";
+import { wedding } from "@/lib/config";
 import { saveGuest } from "@/app/actions/admin";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ const GROUPS = [
   { value: "otros", label: "Otros" },
 ];
 
-type Row = { name: string; kind: "adult" | "child" };
+type Row = { name: string; kind: "adult" | "child"; meal: string };
 
 export function GuestFormDialog({
   guest,
@@ -32,10 +33,10 @@ export function GuestFormDialog({
 
   // Acompañantes = party sin el principal (primer elemento)
   const [rows, setRows] = useState<Row[]>(() =>
-    (guest?.party ?? []).slice(1).map((m) => ({ name: m.name, kind: m.kind }))
+    (guest?.party ?? []).slice(1).map((m) => ({ name: m.name, kind: m.kind, meal: m.meal ?? '' }))
   );
 
-  const addRow = () => setRows((r) => [...r, { name: "", kind: "adult" }]);
+  const addRow = () => setRows((r) => [...r, { name: "", kind: "adult", meal: "" }]);
   const delRow = (i: number) => setRows((r) => r.filter((_, x) => x !== i));
   const setRow = (i: number, patch: Partial<Row>) =>
     setRows((r) => r.map((x, n) => (n === i ? { ...x, ...patch } : x)));
@@ -137,6 +138,40 @@ export function GuestFormDialog({
                       </Field>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Mesa" htmlFor="table_name">
+                        <select
+                          id="table_name"
+                          name="table_name"
+                          defaultValue={guest?.table_name ?? ""}
+                          className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <option value="">Sin asignar</option>
+                          {wedding.tables.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Plato del principal" htmlFor="meal">
+                        <select
+                          id="meal"
+                          name="meal"
+                          defaultValue={guest?.party?.[0]?.meal ?? ""}
+                          className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {wedding.meals
+                            .filter((m) => m.for === "adult")
+                            .map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.label}
+                              </option>
+                            ))}
+                        </select>
+                      </Field>
+                    </div>
+
                     {/* Acompañantes con nombre */}
                     <div>
                       <div className="flex items-center justify-between">
@@ -164,31 +199,56 @@ export function GuestFormDialog({
                           </p>
                         )}
                         {rows.map((r, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <Input
-                              value={r.name}
-                              onChange={(e) => setRow(i, { name: e.target.value })}
-                              placeholder="Nombre del acompañante"
-                              className="flex-1"
-                            />
+                          <div
+                            key={i}
+                            className="rounded-lg border border-border bg-muted/30 p-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={r.name}
+                                onChange={(e) => setRow(i, { name: e.target.value })}
+                                placeholder="Nombre del acompañante"
+                                className="flex-1 bg-background"
+                              />
+                              <select
+                                value={r.kind}
+                                onChange={(e) =>
+                                  setRow(i, {
+                                    kind: e.target.value as Row["kind"],
+                                    meal: "", // el plato vuelve al de por defecto
+                                  })
+                                }
+                                className="h-10 rounded-lg border border-input bg-background px-2 text-xs"
+                              >
+                                <option value="adult">Adulto</option>
+                                <option value="child">Niño</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => delRow(i)}
+                                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-destructive"
+                                aria-label="Quitar"
+                              >
+                                <Trash2 className="size-4" />
+                              </button>
+                            </div>
                             <select
-                              value={r.kind}
-                              onChange={(e) =>
-                                setRow(i, { kind: e.target.value as Row["kind"] })
-                              }
-                              className="h-10 rounded-lg border border-input bg-background px-2 text-xs"
+                              value={r.meal}
+                              onChange={(e) => setRow(i, { meal: e.target.value })}
+                              className="mt-2 h-9 w-full rounded-lg border border-input bg-background px-2 text-xs"
+                              aria-label={`Plato de ${r.name || "acompañante"}`}
                             >
-                              <option value="adult">Adulto</option>
-                              <option value="child">Niño</option>
+                              <option value="">
+                                Plato por defecto ({r.kind === "child" ? "niño" : "adulto"})
+                              </option>
+                              {wedding.meals
+                                .filter((m) => m.for === r.kind)
+                                .map((m) => (
+                                  <option key={m.id} value={m.id}>
+                                    {m.label}
+                                  </option>
+                                ))}
                             </select>
-                            <button
-                              type="button"
-                              onClick={() => delRow(i)}
-                              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-destructive"
-                              aria-label="Quitar"
-                            >
-                              <Trash2 className="size-4" />
-                            </button>
                           </div>
                         ))}
                       </div>
