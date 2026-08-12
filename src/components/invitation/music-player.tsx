@@ -13,17 +13,20 @@ export function MusicPlayer() {
   const audio = useRef<HTMLAudioElement>(null);
   const [sonando, setSonando] = useState(false);
   const [listo, setListo] = useState(false);
+  /** El usuario apagó la música a mano: no volver a arrancarla sola. */
+  const apagadaPorElUsuario = useRef(false);
 
-  // Primer toque/scroll del usuario → intenta reproducir
+  // Solo el PRIMER toque/scroll intenta arrancar la música. Después de eso
+  // (o si el invitado la silencia) nunca vuelve a activarse sola.
   useEffect(() => {
     const arrancar = () => {
       const el = audio.current;
-      if (!el || sonando) return;
+      if (!el || apagadaPorElUsuario.current || !el.paused) return;
       el.volume = 0.35;
       el.play()
         .then(() => setSonando(true))
         .catch(() => {
-          /* el navegador lo bloqueó: quedará el botón para activarlo */
+          /* el navegador lo bloqueó: queda el botón para activarlo */
         });
     };
     const opts = { once: true, passive: true } as const;
@@ -36,15 +39,17 @@ export function MusicPlayer() {
       window.removeEventListener("touchstart", arrancar);
       window.removeEventListener("scroll", arrancar, true);
     };
-  }, [sonando]);
+  }, []);
 
   function alternar() {
     const el = audio.current;
     if (!el) return;
-    if (sonando) {
+    if (!el.paused) {
+      apagadaPorElUsuario.current = true; // decisión del invitado: se respeta
       el.pause();
       setSonando(false);
     } else {
+      apagadaPorElUsuario.current = false;
       el.volume = 0.35;
       el.play()
         .then(() => setSonando(true))

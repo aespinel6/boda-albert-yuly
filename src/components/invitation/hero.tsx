@@ -66,14 +66,14 @@ export function Hero() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 flex h-full max-w-2xl flex-col px-8 pb-24 pt-14 text-center text-white [text-shadow:0_2px_16px_rgba(15,20,30,0.55)] sm:pb-28"
+        className="relative z-10 flex h-full max-w-2xl flex-col px-5 pb-16 pt-8 text-center text-white [text-shadow:0_2px_16px_rgba(15,20,30,0.55)] sm:px-8 sm:pb-24 sm:pt-12"
       >
         <p className="eyebrow flex-none text-gold-light">
           {wedding.dedication.eyebrow}
         </p>
 
-        <div className="carta-scroll mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <blockquote className="space-y-3 font-serif text-[15px] font-light italic leading-relaxed [text-wrap:pretty] sm:text-lg sm:leading-relaxed">
+        <div className="carta-scroll mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <blockquote className="space-y-1 font-serif text-[12px] font-light italic leading-[1.38] [text-wrap:pretty] sm:space-y-2 sm:text-base sm:leading-snug">
             {wedding.dedication.text.split(/\n\n+/).map((para, i, arr) => (
               <p key={i}>
                 {i === 0 && "“"}
@@ -85,8 +85,8 @@ export function Hero() {
         </div>
 
         <div className="flex-none">
-          <div className="horizon my-4" />
-          <figcaption className="font-serif text-base italic text-gold-light">
+          <div className="horizon my-2.5" />
+          <figcaption className="font-serif text-sm italic text-gold-light sm:text-base">
             — {wedding.dedication.signature}
           </figcaption>
         </div>
