@@ -17,7 +17,9 @@ import {
   updateGuestTable,
   deleteGuest,
   markSent,
+  listGuests,
 } from "@/lib/guests";
+import { autoAssign, seatsUsedBy } from "@/lib/pricing";
 
 export type LoginState = { error: string } | null;
 
@@ -69,6 +71,33 @@ export async function setGuestGroup(id: string, group: string) {
 /** Asignación rápida de mesa desde la tabla. */
 export async function setGuestTable(id: string, table: string) {
   await updateGuestTable(id, table || null);
+  revalidatePath("/admin");
+  return { ok: true as const };
+}
+
+/** Distribuye automáticamente a quienes no tienen mesa, respetando el cupo. */
+export async function autoAssignTables(capacities: Record<string, number>) {
+  const guests = await listGuests();
+  const asignaciones = autoAssign(guests, capacities);
+  const ids = Object.keys(asignaciones);
+
+  for (const id of ids) {
+    await updateGuestTable(id, asignaciones[id]);
+  }
+
+  const sinCupo =
+    guests.filter((g) => !g.table_name && seatsUsedBy(g) > 0).length - ids.length;
+
+  revalidatePath("/admin");
+  return { ok: true as const, asignados: ids.length, sinCupo };
+}
+
+/** Quita la mesa a todas las invitaciones (para volver a empezar). */
+export async function clearAllTables() {
+  const guests = await listGuests();
+  for (const g of guests) {
+    if (g.table_name) await updateGuestTable(g.id, null);
+  }
   revalidatePath("/admin");
   return { ok: true as const };
 }

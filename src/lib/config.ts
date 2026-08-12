@@ -114,24 +114,28 @@ export const wedding = {
   // ── Organización del salón ────────────────────────────────────
   // Mesas disponibles. Edita, agrega o quita libremente: el panel
   // muestra exactamente esta lista al asignar mesa a cada invitación.
+  // `seats` es la capacidad por defecto; se puede cambiar desde el panel.
   tables: [
-    "Mesa principal",
-    "Mesa 1",
-    "Mesa 2",
-    "Mesa 3",
-    "Mesa 4",
-    "Mesa 5",
-    "Mesa 6",
-    "Mesa 7",
-    "Mesa 8",
-    "Mesa 9",
-    "Mesa 10",
-    "Mesa 11",
-    "Mesa 12",
-    "Mesa 13",
-    "Mesa 14",
-    "Mesa 15",
+    { name: "Mesa principal", seats: 6 },
+    { name: "Mesa 1", seats: 8 },
+    { name: "Mesa 2", seats: 6 },
+    { name: "Mesa 3", seats: 6 },
+    { name: "Mesa 4", seats: 6 },
+    { name: "Mesa 5", seats: 6 },
+    { name: "Mesa 6", seats: 6 },
+    { name: "Mesa 7", seats: 6 },
+    { name: "Mesa 8", seats: 6 },
+    { name: "Mesa 9", seats: 6 },
+    { name: "Mesa 10", seats: 6 },
+    { name: "Mesa 11", seats: 6 },
+    { name: "Mesa 12", seats: 6 },
+    { name: "Mesa 13", seats: 6 },
+    { name: "Mesa 14", seats: 6 },
+    { name: "Mesa 15", seats: 6 },
   ],
+
+  /** Capacidades que se pueden elegir para cada mesa. */
+  seatOptions: [6, 8, 10],
 
   // Tipos de plato. `price` se usa para el presupuesto; `default` marca
   // cuál se asigna automáticamente a cada adulto o niño nuevo.

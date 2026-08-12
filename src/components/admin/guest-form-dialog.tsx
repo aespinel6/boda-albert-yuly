@@ -148,8 +148,8 @@ export function GuestFormDialog({
                         >
                           <option value="">Sin asignar</option>
                           {wedding.tables.map((t) => (
-                            <option key={t} value={t}>
-                              {t}
+                            <option key={t.name} value={t.name}>
+                              {t.name}
                             </option>
                           ))}
                         </select>

@@ -107,12 +107,36 @@ export interface TableSummary {
   guests: Guest[];
   people: number;
   confirmed: number;
+  /** Puestos totales de la mesa. */
+  seats: number;
+  /** Puestos libres (nunca negativo). */
+  free: number;
+  /** Se pasó del cupo. */
+  over: boolean;
+}
+
+/** Cuántas sillas ocupa una invitación (los virtuales y ausentes no ocupan). */
+export function seatsUsedBy(g: Guest): number {
+  if (g.status === "declined" || g.status === "virtual") return 0;
+  return eaters(g, true).length;
+}
+
+/** Capacidad por mesa: la de la config, salvo que el panel la haya cambiado. */
+export type Capacities = Record<string, number>;
+
+export function seatsOf(name: string, capacities?: Capacities): number {
+  const custom = capacities?.[name];
+  if (typeof custom === "number" && custom > 0) return custom;
+  return wedding.tables.find((t) => t.name === name)?.seats ?? 6;
 }
 
 /** Agrupa las invitaciones por mesa, en el orden definido en la config. */
-export function groupByTable(guests: Guest[]): {
+export function groupByTable(
+  guests: Guest[],
+  capacities?: Capacities
+): {
   tables: TableSummary[];
-  unassigned: TableSummary;
+  unassigned: Omit<TableSummary, "seats" | "free" | "over">;
 } {
   const porMesa = new Map<string, Guest[]>();
   const sinMesa: Guest[] = [];
@@ -123,32 +147,80 @@ export function groupByTable(guests: Guest[]): {
     else porMesa.set(t, [...(porMesa.get(t) ?? []), g]);
   }
 
-  const resumen = (name: string, list: Guest[]): TableSummary => ({
-    name,
-    guests: list,
-    // Personas que ocuparán silla: si ya respondió, las que asisten.
-    people: list.reduce(
-      (n, g) =>
-        n +
-        (g.status === "declined" || g.status === "virtual"
-          ? 0
-          : eaters(g, true).length),
-      0
-    ),
-    confirmed: list.filter((g) => g.status === "confirmed").length,
-  });
+  const personas = (list: Guest[]) =>
+    list.reduce((n, g) => n + seatsUsedBy(g), 0);
 
   // Mesas de la config primero (aunque estén vacías), luego cualquier otra.
-  const configuradas: readonly string[] = wedding.tables;
+  const configuradas: string[] = wedding.tables.map((t) => t.name);
   const nombres = [
     ...configuradas,
     ...[...porMesa.keys()].filter((n) => !configuradas.includes(n)),
   ];
 
   return {
-    tables: nombres.map((n) => resumen(n, porMesa.get(n) ?? [])),
-    unassigned: resumen("Sin mesa", sinMesa),
+    tables: nombres.map((name) => {
+      const list = porMesa.get(name) ?? [];
+      const people = personas(list);
+      const seats = seatsOf(name, capacities);
+      return {
+        name,
+        guests: list,
+        people,
+        confirmed: list.filter((g) => g.status === "confirmed").length,
+        seats,
+        free: Math.max(0, seats - people),
+        over: people > seats,
+      };
+    }),
+    unassigned: {
+      name: "Sin mesa",
+      guests: sinMesa,
+      people: personas(sinMesa),
+      confirmed: sinMesa.filter((g) => g.status === "confirmed").length,
+    },
   };
+}
+
+/**
+ * Distribuye automáticamente las invitaciones sin mesa.
+ * Mantiene juntos a los grupos (una invitación nunca se parte) y prefiere
+ * mesas donde ya hay gente del mismo grupo (familia, amigos…).
+ */
+export function autoAssign(
+  guests: Guest[],
+  capacities?: Capacities
+): Record<string, string> {
+  const { tables, unassigned } = groupByTable(guests, capacities);
+  const libre = new Map(tables.map((t) => [t.name, t.free]));
+  const grupos = new Map(
+    tables.map((t) => [t.name, new Set(t.guests.map((g) => g.group))])
+  );
+
+  // Los grupos grandes primero: encajan mejor (bin packing "first fit decreasing").
+  const pendientes = unassigned.guests
+    .filter((g) => seatsUsedBy(g) > 0)
+    .sort((a, b) => seatsUsedBy(b) - seatsUsedBy(a));
+
+  const asignaciones: Record<string, string> = {};
+
+  for (const g of pendientes) {
+    const necesita = seatsUsedBy(g);
+    const candidatas = tables
+      .map((t) => t.name)
+      .filter((n) => (libre.get(n) ?? 0) >= necesita);
+    if (candidatas.length === 0) continue; // no cabe en ninguna mesa
+
+    // Las mesas se llenan en orden (Mesa principal, Mesa 1, Mesa 2…), pero si
+    // ya hay gente del mismo grupo en alguna con espacio, se sienta con ellos.
+    const conSuGente = candidatas.find((n) => grupos.get(n)?.has(g.group));
+    const elegida = conSuGente ?? candidatas[0];
+
+    asignaciones[g.id] = elegida;
+    libre.set(elegida, (libre.get(elegida) ?? 0) - necesita);
+    grupos.get(elegida)?.add(g.group);
+  }
+
+  return asignaciones;
 }
 
 /** Formatea un número como pesos colombianos: 50000 → "$50.000". */
