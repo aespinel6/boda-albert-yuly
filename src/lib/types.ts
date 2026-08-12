@@ -58,4 +58,8 @@ export interface DashboardStats {
   totalAttendees: number; // personas confirmadas presencialmente
   virtualAttendees: number; // personas que se conectan (sin plato)
   sent: number;
+  /** Invitaciones ya ubicadas en una mesa. */
+  seated: number;
+  /** Invitaciones que todavia no tienen mesa (excluye a los que no asisten). */
+  unseated: number;
 }

@@ -1,4 +1,4 @@
-import { Users, Check, Clock, X, UserCheck, Send, Video } from "lucide-react";
+import { Users, Check, Clock, X, UserCheck, Send, Video, Armchair } from "lucide-react";
 import type { DashboardStats } from "@/lib/types";
 
 export function StatsCards({ stats }: { stats: DashboardStats }) {
@@ -35,7 +35,7 @@ export function StatsCards({ stats }: { stats: DashboardStats }) {
         </div>
       ))}
 
-      <div className="col-span-2 grid gap-4 sm:grid-cols-3 lg:col-span-5">
+      <div className="col-span-2 grid gap-4 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-4">
         <div className="flex items-center gap-4 rounded-2xl border border-border bg-gradient-to-br from-twilight to-twilight-soft p-5 text-white shadow-sm">
           <span className="flex size-11 flex-none items-center justify-center rounded-xl bg-white/10 text-gold-light">
             <UserCheck className="size-5" />
@@ -54,6 +54,35 @@ export function StatsCards({ stats }: { stats: DashboardStats }) {
             <p className="text-sm text-muted-foreground">Nos ven en línea (sin plato)</p>
             <p className="font-serif text-3xl tabular-nums">
               {stats.virtualAttendees} personas
+            </p>
+          </div>
+        </div>
+
+        <div
+          className={`flex items-center gap-4 rounded-2xl border p-5 shadow-sm ${
+            stats.unseated > 0
+              ? "border-gold/40 bg-gold/5"
+              : "border-emerald-500/40 bg-emerald-500/5"
+          }`}
+        >
+          <span
+            className={`flex size-11 flex-none items-center justify-center rounded-xl ${
+              stats.unseated > 0
+                ? "bg-gold/15 text-gold"
+                : "bg-emerald-500/15 text-emerald-600"
+            }`}
+          >
+            <Armchair className="size-5" />
+          </span>
+          <div>
+            <p className="text-sm text-muted-foreground">
+              {stats.unseated > 0
+                ? `Ubicados en mesa · faltan ${stats.unseated}`
+                : "Todos ubicados en mesa"}
+            </p>
+            <p className="font-serif text-3xl tabular-nums">
+              {stats.seated}{" "}
+              <span className="text-xl text-muted-foreground">/ {stats.total}</span>
             </p>
           </div>
         </div>

@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState, useTransition } from "react";
 import {
   Search, Download, MessageCircle, Check, Copy, Users2, Pencil,
-  ChevronDown, ChevronRight, Baby, Eye,
+  ChevronDown, ChevronRight, Baby, Eye, Armchair, AlertTriangle,
 } from "lucide-react";
 import type { Guest, GuestStatus } from "@/lib/types";
 import {
@@ -48,7 +48,13 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
   const [group, setGroup] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [soloSinMesa, setSoloSinMesa] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  const sinMesa = useMemo(
+    () => guests.filter((g) => !g.table_name && g.status !== "declined").length,
+    [guests]
+  );
 
   const groups = useMemo(
     () => Array.from(new Set(guests.map((g) => g.group))),
@@ -61,12 +67,13 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
       .filter((g) => {
         if (status !== "all" && g.status !== status) return false;
         if (group !== "all" && g.group !== group) return false;
+        if (soloSinMesa && g.table_name) return false;
         if (q && !g.name.toLowerCase().includes(q) && !(g.phone ?? "").includes(q))
           return false;
         return true;
       })
       .sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
-  }, [guests, query, status, group]);
+  }, [guests, query, status, group, soloSinMesa]);
 
   function sendWhatsapp(g: Guest) {
     const link = whatsappLink(
@@ -91,6 +98,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
         Nombre: g.name,
         Teléfono: g.phone ?? "",
         Grupo: g.group,
+        Mesa: g.table_name ?? "Sin mesa",
         Estado: STATUS_LABEL[g.status],
         Acompañantes: party.slice(1).map((m) => m.name).join(", "),
         Adultos: g.adults,
@@ -146,6 +154,27 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
               {label}
             </button>
           ))}
+          <button
+            onClick={() => setSoloSinMesa((v) => !v)}
+            title="Ver solo los que aún no tienen mesa"
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+              soloSinMesa
+                ? "border-gold bg-gold text-twilight"
+                : "border-border text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <AlertTriangle className="size-3.5" />
+            Sin mesa
+            {sinMesa > 0 && (
+              <span
+                className={`rounded-full px-1.5 text-[10px] tabular-nums ${
+                  soloSinMesa ? "bg-twilight/20" : "bg-gold/20 text-gold"
+                }`}
+              >
+                {sinMesa}
+              </span>
+            )}
+          </button>
         </div>
 
         {groups.length > 1 && (
@@ -176,6 +205,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
               <th>Invitado</th>
               <th>Grupo</th>
               <th>Estado</th>
+              <th>Mesa</th>
               <th className="text-center">Personas</th>
               <th className="text-center">Enviada</th>
               <th className="text-right">Acciones</th>
@@ -236,6 +266,19 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant={STATUS_VARIANT[g.status]}>{STATUS_LABEL[g.status]}</Badge>
+                </td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  {g.table_name ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
+                      <Armchair className="size-3.5" />
+                      {g.table_name}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-semibold text-gold">
+                      <AlertTriangle className="size-3.5" />
+                      Sin mesa
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <div
@@ -313,7 +356,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
               {/* Desplegable: acompañantes, como sub-líneas indentadas */}
               {isOpen && companions.length > 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 pb-3 pt-0">
+                  <td colSpan={7} className="px-4 pb-3 pt-0">
                     <ul className="ml-12 space-y-1.5 border-l border-border pl-4">
                       {companions.map((m) => (
                         <li
@@ -348,7 +391,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-14 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-14 text-center text-muted-foreground">
                   {guests.length === 0
                     ? "Aún no hay invitados. Añade el primero con el botón de arriba."
                     : "No hay invitados que coincidan con el filtro."}

@@ -258,5 +258,7 @@ export function computeStats(guests: Guest[]): DashboardStats {
     totalAttendees: people(confirmed),
     virtualAttendees: people(virtual),
     sent: guests.filter((g) => g.sent).length,
+    seated: guests.filter((g) => !!g.table_name).length,
+    unseated: guests.filter((g) => !g.table_name && g.status !== "declined").length,
   };
 }
