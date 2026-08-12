@@ -2,12 +2,18 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
-  Armchair, Users2, Baby, AlertTriangle, Wand2, Eraser, Loader2, Lock,
+  Armchair, Users2, Baby, AlertTriangle, Wand2, Eraser, Loader2, Lock, Video,
 } from "lucide-react";
 import type { Guest } from "@/lib/types";
 import { wedding } from "@/lib/config";
 import { groupByTable, seatsOf, seatsUsedBy, type Capacities } from "@/lib/pricing";
-import { setGuestTable, autoAssignTables, clearAllTables } from "@/app/actions/admin";
+import {
+  setGuestTable,
+  autoAssignTables,
+  clearAllTables,
+  setMemberMeal,
+  setTableMeal,
+} from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "boda_table_seats";
@@ -40,8 +46,10 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
     [guests, caps]
   );
 
-  const sentados = tables.reduce((n, t) => n + t.people, 0);
-  const puestos = tables.reduce((n, t) => n + t.seats, 0);
+  const reales = tables.filter((t) => !t.isVirtual);
+  const sentados = reales.reduce((n, t) => n + t.people, 0);
+  const puestos = reales.reduce((n, t) => n + t.seats, 0);
+  const enLinea = tables.find((t) => t.isVirtual)?.people ?? 0;
 
   function asignar(id: string, mesa: string) {
     setAviso(null);
@@ -74,9 +82,10 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
     const necesita = seatsUsedBy(g);
     return tables.map((t) => ({
       name: t.name,
-      // La mesa actual siempre se puede mantener.
-      full: t.name !== actual && t.free < necesita,
+      // La mesa actual siempre se puede mantener; la virtual nunca se llena.
+      full: !t.isVirtual && t.name !== actual && t.free < necesita,
       free: t.free,
+      isVirtual: t.isVirtual,
     }));
   };
 
@@ -86,7 +95,9 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
         <div>
           <h2 className="font-serif text-2xl leading-tight">Mesas del salón</h2>
           <p className="text-sm text-muted-foreground">
-            {sentados} de {puestos} puestos ocupados · {unassigned.people} personas por ubicar
+            {sentados} de {puestos} puestos ocupados
+            {enLinea > 0 && ` · ${enLinea} en línea`} · {unassigned.people} personas por
+            ubicar
           </p>
         </div>
         <div className="flex gap-2">
@@ -133,7 +144,12 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
                   <option value="">Asignar…</option>
                   {opcionesPara(g).map((t) => (
                     <option key={t.name} value={t.name} disabled={t.full}>
-                      {t.name} {t.full ? "(llena)" : `· ${t.free} libres`}
+                      {t.name}{" "}
+                      {t.isVirtual
+                        ? "· en línea"
+                        : t.full
+                          ? "(llena)"
+                          : `· ${t.free} libres`}
                     </option>
                   ))}
                 </select>
@@ -146,89 +162,162 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
       {/* Mesas */}
       <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
         {tables.map((t) => {
-          const llena = t.free === 0 && !t.over;
+          const llena = !t.isVirtual && t.free === 0 && !t.over;
           return (
             <div
               key={t.name}
               className={`rounded-xl border p-4 ${
-                t.over
-                  ? "border-destructive/40 bg-destructive/5"
-                  : llena
-                    ? "border-emerald-500/40 bg-emerald-500/5"
-                    : "border-border bg-background"
+                t.isVirtual
+                  ? "border-mirror/40 bg-mirror/5"
+                  : t.over
+                    ? "border-destructive/40 bg-destructive/5"
+                    : llena
+                      ? "border-emerald-500/40 bg-emerald-500/5"
+                      : "border-border bg-background"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5 text-sm font-semibold">
-                  <Armchair className="size-4 text-gold" />
+                  {t.isVirtual ? (
+                    <Video className="size-4 text-mirror" />
+                  ) : (
+                    <Armchair className="size-4 text-gold" />
+                  )}
                   {t.name}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span
                     className={`text-sm tabular-nums ${
-                      t.over
-                        ? "font-semibold text-destructive"
-                        : llena
-                          ? "font-medium text-emerald-600"
-                          : "text-muted-foreground"
+                      t.isVirtual
+                        ? "text-mirror"
+                        : t.over
+                          ? "font-semibold text-destructive"
+                          : llena
+                            ? "font-medium text-emerald-600"
+                            : "text-muted-foreground"
                     }`}
                   >
-                    {t.people}/{t.seats}
+                    {t.isVirtual ? `${t.people} en línea` : `${t.people}/${t.seats}`}
                   </span>
-                  <select
-                    value={seatsOf(t.name, caps)}
-                    onChange={(e) =>
-                      setCaps((c) => ({ ...c, [t.name]: Number(e.target.value) }))
-                    }
-                    className="h-6 rounded border border-input bg-background px-1 text-[11px] text-muted-foreground"
-                    aria-label={`Puestos de ${t.name}`}
-                    title="Puestos de la mesa"
-                  >
-                    {wedding.seatOptions.map((n) => (
-                      <option key={n} value={n}>
-                        {n} p.
-                      </option>
-                    ))}
-                  </select>
+                  {!t.isVirtual && (
+                    <select
+                      value={seatsOf(t.name, caps)}
+                      onChange={(e) =>
+                        setCaps((c) => ({ ...c, [t.name]: Number(e.target.value) }))
+                      }
+                      className="h-6 rounded border border-input bg-background px-1 text-[11px] text-muted-foreground"
+                      aria-label={`Puestos de ${t.name}`}
+                      title="Puestos de la mesa"
+                    >
+                      {wedding.seatOptions.map((n) => (
+                        <option key={n} value={n}>
+                          {n} p.
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
+
+              {/* Plato para toda la mesa (los niños conservan el suyo) */}
+              {t.guests.length > 0 && !t.isVirtual && (
+                <label className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  Plato de la mesa
+                  <select
+                    value=""
+                    disabled={pending}
+                    onChange={(e) => {
+                      const meal = e.target.value;
+                      if (!meal) return;
+                      startTransition(() => {
+                        setTableMeal(t.name, meal);
+                      });
+                    }}
+                    className="h-6 flex-1 rounded border border-input bg-background px-1 text-[10px]"
+                    aria-label={`Poner el mismo plato a toda la ${t.name}`}
+                  >
+                    <option value="">Aplicar a todos…</option>
+                    {wedding.meals
+                      .filter((m) => m.for === "adult")
+                      .map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.label}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              )}
 
               {t.guests.length === 0 ? (
                 <p className="mt-3 text-xs text-muted-foreground">Mesa vacía</p>
               ) : (
-                <ul className="mt-3 space-y-1.5">
+                <ul className="mt-3 space-y-2">
                   {t.guests.map((g) => (
-                    <li key={g.id} className="flex items-center gap-2 text-sm">
-                      <span className="min-w-0 flex-1 truncate">{g.name}</span>
-                      <span className="flex flex-none items-center gap-1 text-xs text-muted-foreground">
-                        {g.adults > 0 && (
-                          <>
-                            <Users2 className="size-3" />
-                            {g.adults}
-                          </>
-                        )}
-                        {g.children > 0 && (
-                          <>
-                            <Baby className="size-3" />
-                            {g.children}
-                          </>
-                        )}
-                      </span>
-                      <select
-                        value={t.name}
-                        disabled={pending}
-                        onChange={(e) => asignar(g.id, e.target.value)}
-                        className="h-6 max-w-[26px] flex-none rounded border border-input bg-background text-[10px] text-muted-foreground"
-                        aria-label={`Cambiar mesa de ${g.name}`}
-                        title="Cambiar de mesa"
-                      >
-                        <option value="">Sin mesa</option>
-                        {opcionesPara(g, t.name).map((o) => (
-                          <option key={o.name} value={o.name} disabled={o.full}>
-                            {o.name} {o.full ? "(llena)" : `· ${o.free} libres`}
-                          </option>
+                    <li key={g.id} className="rounded-lg bg-muted/40 p-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="min-w-0 flex-1 truncate font-medium">
+                          {g.name}
+                        </span>
+                        <select
+                          value={t.name}
+                          disabled={pending}
+                          onChange={(e) => asignar(g.id, e.target.value)}
+                          className="h-6 max-w-[70px] flex-none rounded border border-input bg-background text-[10px] text-muted-foreground"
+                          aria-label={`Cambiar mesa de ${g.name}`}
+                          title="Cambiar de mesa"
+                        >
+                          <option value="">Sin mesa</option>
+                          {opcionesPara(g, t.name).map((o) => (
+                            <option key={o.name} value={o.name} disabled={o.full}>
+                              {o.name}{" "}
+                              {o.isVirtual
+                                ? "· en línea"
+                                : o.full
+                                  ? "(llena)"
+                                  : `· ${o.free} libres`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Plato de cada persona */}
+                      <ul className="mt-1.5 space-y-1">
+                        {(g.party ?? []).map((m) => (
+                          <li
+                            key={m.name}
+                            className="flex items-center gap-1.5 text-xs"
+                          >
+                            {m.kind === "child" ? (
+                              <Baby className="size-3 flex-none text-muted-foreground" />
+                            ) : (
+                              <Users2 className="size-3 flex-none text-muted-foreground" />
+                            )}
+                            <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                              {m.name}
+                            </span>
+                            <select
+                              value={m.meal ?? ""}
+                              disabled={pending}
+                              onChange={(e) =>
+                                startTransition(() => {
+                                  setMemberMeal(g.id, m.name, e.target.value);
+                                })
+                              }
+                              className="h-6 max-w-[92px] flex-none rounded border border-input bg-background px-1 text-[10px]"
+                              aria-label={`Plato de ${m.name}`}
+                              title="Cambiar plato"
+                            >
+                              {wedding.meals
+                                .filter((x) => x.for === m.kind)
+                                .map((x) => (
+                                  <option key={x.id} value={x.id}>
+                                    {x.label}
+                                  </option>
+                                ))}
+                            </select>
+                          </li>
                         ))}
-                      </select>
+                      </ul>
                     </li>
                   ))}
                 </ul>

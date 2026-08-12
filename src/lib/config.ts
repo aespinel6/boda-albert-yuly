@@ -137,6 +137,12 @@ export const wedding = {
   /** Capacidades que se pueden elegir para cada mesa. */
   seatOptions: [6, 8, 10],
 
+  /**
+   * Mesa sin sillas para quienes nos acompañan en línea (y para "aparcar"
+   * a quien todavía no quieras sentar). No ocupa puestos ni platos.
+   */
+  virtualTable: "Mesa virtual",
+
   // Tipos de plato. `price` se usa para el presupuesto; `default` marca
   // cuál se asigna automáticamente a cada adulto o niño nuevo.
   meals: [

@@ -222,6 +222,55 @@ export async function updateGuestTable(
   if (error) throw new Error(error.message);
 }
 
+/** Cambia el plato de UNA persona dentro de una invitación. */
+export async function updateMemberMeal(
+  guestId: string,
+  memberName: string,
+  meal: string
+): Promise<void> {
+  const guests = await listGuests();
+  const guest = guests.find((g) => g.id === guestId);
+  if (!guest) throw new Error("Invitado no encontrado");
+
+  const party = (guest.party ?? []).map((m) =>
+    m.name === memberName ? { ...m, meal } : m
+  );
+
+  if (isDemoMode()) {
+    demoStore.update(guestId, { party });
+    return;
+  }
+  const supabase = createSupabaseAdmin();
+  const { error } = await supabase.from("guests").update({ party }).eq("id", guestId);
+  if (error) throw new Error(error.message);
+}
+
+/** Pone el mismo plato a todos los adultos de una mesa (los niños no cambian). */
+export async function updateTableMeal(
+  tableName: string,
+  meal: string
+): Promise<number> {
+  const guests = await listGuests();
+  const enLaMesa = guests.filter((g) => g.table_name === tableName);
+
+  for (const g of enLaMesa) {
+    const party = (g.party ?? []).map((m) =>
+      m.kind === "adult" ? { ...m, meal } : m
+    );
+    if (isDemoMode()) {
+      demoStore.update(g.id, { party });
+    } else {
+      const supabase = createSupabaseAdmin();
+      const { error } = await supabase
+        .from("guests")
+        .update({ party })
+        .eq("id", g.id);
+      if (error) throw new Error(error.message);
+    }
+  }
+  return enLaMesa.length;
+}
+
 /** Cambia solo el grupo (edición rápida desde la tabla). */
 export async function updateGuestGroup(id: string, group: GuestGroup): Promise<void> {
   if (isDemoMode()) {

@@ -117,6 +117,15 @@ export interface TableSummary {
   free: number;
   /** Se pasó del cupo. */
   over: boolean;
+  /** Mesa sin sillas: los que nos ven en línea. */
+  isVirtual: boolean;
+}
+
+/** Personas de una invitación que se conectan (no ocupan silla ni plato). */
+export function onlineCountOf(g: Guest): number {
+  if (g.status !== "virtual") return 0;
+  const party = g.party ?? [];
+  return party.filter((m) => m.attending).length || party.length;
 }
 
 /** Cuántas sillas ocupa una invitación (los virtuales y ausentes no ocupan). */
@@ -140,7 +149,7 @@ export function groupByTable(
   capacities?: Capacities
 ): {
   tables: TableSummary[];
-  unassigned: Omit<TableSummary, "seats" | "free" | "over">;
+  unassigned: Omit<TableSummary, "seats" | "free" | "over" | "isVirtual">;
 } {
   const porMesa = new Map<string, Guest[]>();
   const sinMesa: Guest[] = [];
@@ -154,26 +163,35 @@ export function groupByTable(
   const personas = (list: Guest[]) =>
     list.reduce((n, g) => n + seatsUsedBy(g), 0);
 
-  // Mesas de la config primero (aunque estén vacías), luego cualquier otra.
+  // Mesas de la config, luego cualquier otra, y de última la mesa virtual.
   const configuradas: string[] = wedding.tables.map((t) => t.name);
+  const virtual = wedding.virtualTable;
   const nombres = [
     ...configuradas,
-    ...[...porMesa.keys()].filter((n) => !configuradas.includes(n)),
+    ...[...porMesa.keys()].filter(
+      (n) => !configuradas.includes(n) && n !== virtual
+    ),
+    virtual,
   ];
 
   return {
     tables: nombres.map((name) => {
       const list = porMesa.get(name) ?? [];
-      const people = personas(list);
-      const seats = seatsOf(name, capacities);
+      const isVirtual = name === virtual;
+      // La mesa virtual no tiene sillas: cuenta a quienes se conectan.
+      const people = isVirtual
+        ? list.reduce((n, g) => n + (onlineCountOf(g) || seatsUsedBy(g)), 0)
+        : personas(list);
+      const seats = isVirtual ? 0 : seatsOf(name, capacities);
       return {
         name,
         guests: list,
         people,
         confirmed: list.filter((g) => g.status === "confirmed").length,
         seats,
-        free: Math.max(0, seats - people),
-        over: people > seats,
+        free: isVirtual ? Number.MAX_SAFE_INTEGER : Math.max(0, seats - people),
+        over: isVirtual ? false : people > seats,
+        isVirtual,
       };
     }),
     unassigned: {
@@ -200,16 +218,22 @@ export function autoAssign(
     tables.map((t) => [t.name, new Set(t.guests.map((g) => g.group))])
   );
 
+  const asignaciones: Record<string, string> = {};
+
+  // Los que nos ven en línea van a la mesa virtual (no ocupan silla).
+  for (const g of unassigned.guests) {
+    if (g.status === "virtual") asignaciones[g.id] = wedding.virtualTable;
+  }
+
   // Los grupos grandes primero: encajan mejor (bin packing "first fit decreasing").
   const pendientes = unassigned.guests
-    .filter((g) => seatsUsedBy(g) > 0)
+    .filter((g) => g.status !== "virtual" && seatsUsedBy(g) > 0)
     .sort((a, b) => seatsUsedBy(b) - seatsUsedBy(a));
-
-  const asignaciones: Record<string, string> = {};
 
   for (const g of pendientes) {
     const necesita = seatsUsedBy(g);
     const candidatas = tables
+      .filter((t) => !t.isVirtual) // la mesa virtual no tiene sillas
       .map((t) => t.name)
       .filter((n) => (libre.get(n) ?? 0) >= necesita);
     if (candidatas.length === 0) continue; // no cabe en ninguna mesa

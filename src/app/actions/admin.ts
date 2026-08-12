@@ -15,6 +15,8 @@ import {
   updateGuest,
   updateGuestGroup,
   updateGuestTable,
+  updateMemberMeal,
+  updateTableMeal,
   deleteGuest,
   markSent,
   listGuests,
@@ -73,6 +75,24 @@ export async function setGuestTable(id: string, table: string) {
   await updateGuestTable(id, table || null);
   revalidatePath("/admin");
   return { ok: true as const };
+}
+
+/** Cambia el plato de una persona concreta. */
+export async function setMemberMeal(
+  guestId: string,
+  memberName: string,
+  meal: string
+) {
+  await updateMemberMeal(guestId, memberName, meal);
+  revalidatePath("/admin");
+  return { ok: true as const };
+}
+
+/** Pone el mismo plato a todos los adultos de una mesa. */
+export async function setTableMeal(tableName: string, meal: string) {
+  const n = await updateTableMeal(tableName, meal);
+  revalidatePath("/admin");
+  return { ok: true as const, invitaciones: n };
 }
 
 /** Distribuye automáticamente a quienes no tienen mesa, respetando el cupo. */
