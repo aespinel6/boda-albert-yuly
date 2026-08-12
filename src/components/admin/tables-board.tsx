@@ -280,43 +280,52 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
                         </select>
                       </div>
 
-                      {/* Plato de cada persona */}
+                      {/* Plato de cada persona (los de en línea no llevan plato) */}
                       <ul className="mt-1.5 space-y-1">
-                        {(g.party ?? []).map((m) => (
-                          <li
-                            key={m.name}
-                            className="flex items-center gap-1.5 text-xs"
-                          >
-                            {m.kind === "child" ? (
-                              <Baby className="size-3 flex-none text-muted-foreground" />
-                            ) : (
-                              <Users2 className="size-3 flex-none text-muted-foreground" />
-                            )}
-                            <span className="min-w-0 flex-1 truncate text-muted-foreground">
-                              {m.name}
-                            </span>
-                            <select
-                              value={m.meal ?? ""}
-                              disabled={pending}
-                              onChange={(e) =>
-                                startTransition(() => {
-                                  setMemberMeal(g.id, m.name, e.target.value);
-                                })
-                              }
-                              className="h-6 max-w-[92px] flex-none rounded border border-input bg-background px-1 text-[10px]"
-                              aria-label={`Plato de ${m.name}`}
-                              title="Cambiar plato"
+                        {(g.party ?? []).map((m) => {
+                          const sinPlato = t.isVirtual || g.status === "virtual";
+                          return (
+                            <li
+                              key={m.name}
+                              className="flex items-center gap-1.5 text-xs"
                             >
-                              {wedding.meals
-                                .filter((x) => x.for === m.kind)
-                                .map((x) => (
-                                  <option key={x.id} value={x.id}>
-                                    {x.label}
-                                  </option>
-                                ))}
-                            </select>
-                          </li>
-                        ))}
+                              {m.kind === "child" ? (
+                                <Baby className="size-3 flex-none text-muted-foreground" />
+                              ) : (
+                                <Users2 className="size-3 flex-none text-muted-foreground" />
+                              )}
+                              <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                                {m.name}
+                              </span>
+                              {sinPlato ? (
+                                <span className="flex flex-none items-center gap-1 text-[10px] text-mirror">
+                                  <Video className="size-3" /> sin plato
+                                </span>
+                              ) : (
+                                <select
+                                  value={m.meal ?? ""}
+                                  disabled={pending}
+                                  onChange={(e) =>
+                                    startTransition(() => {
+                                      setMemberMeal(g.id, m.name, e.target.value);
+                                    })
+                                  }
+                                  className="h-6 max-w-[92px] flex-none rounded border border-input bg-background px-1 text-[10px]"
+                                  aria-label={`Plato de ${m.name}`}
+                                  title="Cambiar plato"
+                                >
+                                  {wedding.meals
+                                    .filter((x) => x.for === m.kind)
+                                    .map((x) => (
+                                      <option key={x.id} value={x.id}>
+                                        {x.label}
+                                      </option>
+                                    ))}
+                                </select>
+                              )}
+                            </li>
+                          );
+                        })}
                       </ul>
                     </li>
                   ))}

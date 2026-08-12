@@ -87,21 +87,26 @@ function summarize(list: Guest[], prices: Prices): CostSummary {
   };
 }
 
+/** Quien nos ve en línea (o está en la mesa virtual) no ocupa plato. */
+function sinPlato(g: Guest): boolean {
+  return g.status === "virtual" || g.table_name === wedding.virtualTable;
+}
+
 /** Resumen de personas y costo — SOLO invitados con status "confirmed". */
 export function computeCost(guests: Guest[], prices: Prices): CostSummary {
   return summarize(
-    guests.filter((g) => g.status === "confirmed"),
+    guests.filter((g) => g.status === "confirmed" && !sinPlato(g)),
     prices
   );
 }
 
 /**
- * Proyección de platos: todos menos los que no asisten y los virtuales
- * (los virtuales cuentan como invitados, pero no ocupan plato).
+ * Proyección de platos: todos menos los que no asisten y los que nos
+ * acompañan en línea (esos cuentan como invitados, pero sin plato).
  */
 export function computeProjection(guests: Guest[], prices: Prices): CostSummary {
   return summarize(
-    guests.filter((g) => g.status !== "declined" && g.status !== "virtual"),
+    guests.filter((g) => g.status !== "declined" && !sinPlato(g)),
     prices
   );
 }
