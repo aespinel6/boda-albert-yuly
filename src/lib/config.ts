@@ -140,8 +140,8 @@ export const wedding = {
   // Tipos de plato. `price` se usa para el presupuesto; `default` marca
   // cuál se asigna automáticamente a cada adulto o niño nuevo.
   meals: [
-    { id: "adulto", label: "Plato adulto principal", price: 50000, for: "adult", default: true },
-    { id: "a", label: "Plato A", price: 55000, for: "adult", default: false },
+    { id: "adulto", label: "Plato principal", price: 65000, for: "adult", default: true },
+    { id: "a", label: "Plato A", price: 50000, for: "adult", default: false },
     { id: "b", label: "Plato B", price: 60000, for: "adult", default: false },
     { id: "nino", label: "Plato niño", price: 30000, for: "child", default: true },
   ],

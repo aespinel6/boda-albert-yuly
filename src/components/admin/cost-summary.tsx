@@ -6,30 +6,27 @@ import type { Guest } from "@/lib/types";
 import {
   computeCost,
   computeProjection,
+  defaultPrices,
   formatCOP,
   type CostSummary as Summary,
   type Prices,
 } from "@/lib/pricing";
 import { wedding } from "@/lib/config";
 
-const STORAGE_KEY = "boda_prices";
+const STORAGE_KEY = "boda_precios_platos";
 
 export function CostSummary({ guests }: { guests: Guest[] }) {
-  const [prices, setPrices] = useState<Prices>({
-    adult: wedding.pricing.adult,
-    child: wedding.pricing.child,
-  });
+  const [prices, setPrices] = useState<Prices>(() => defaultPrices());
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setPrices({ ...prices, ...JSON.parse(raw) });
+      if (raw) setPrices({ ...defaultPrices(), ...JSON.parse(raw) });
     } catch {
       /* ignore */
     }
     setLoaded(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -55,20 +52,24 @@ export function CostSummary({ guests }: { guests: Guest[] }) {
           <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Precio por plato
           </p>
-          <div className="grid max-w-md grid-cols-2 gap-3">
-            <PriceInput
-              label="Adulto"
-              Icon={Users2}
-              value={prices.adult}
-              onChange={(adult) => setPrices((p) => ({ ...p, adult }))}
-            />
-            <PriceInput
-              label="Niño"
-              Icon={Baby}
-              value={prices.child}
-              onChange={(child) => setPrices((p) => ({ ...p, child }))}
-            />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {wedding.meals.map((m) => (
+              <PriceInput
+                key={m.id}
+                label={m.label}
+                Icon={m.for === "child" ? Baby : Users2}
+                value={prices[m.id] ?? m.price}
+                onChange={(v) => setPrices((p) => ({ ...p, [m.id]: v }))}
+              />
+            ))}
           </div>
+          <button
+            type="button"
+            onClick={() => setPrices(defaultPrices())}
+            className="mt-2 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Restablecer precios
+          </button>
         </div>
 
         {/* Dos escenarios */}

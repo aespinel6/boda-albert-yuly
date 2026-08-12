@@ -201,14 +201,14 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="[&>th]:whitespace-nowrap [&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:text-[11px] [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-muted-foreground">
+            <tr className="[&>th]:whitespace-nowrap [&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:py-3 [&>th]:text-left [&>th]:text-[11px] [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-muted-foreground">
               <th>Invitado</th>
               <th>Grupo</th>
               <th>Estado</th>
               <th>Mesa</th>
               <th className="text-center">Personas</th>
               <th className="text-center">Enviada</th>
-              <th className="text-right">Acciones</th>
+              <th className="sticky right-0 z-10 bg-card text-right shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -218,8 +218,8 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
               const isOpen = expanded === g.id;
               return (
               <Fragment key={g.id}>
-              <tr className="border-t border-border/70 transition-colors hover:bg-muted/40">
-                <td className="px-4 py-3">
+              <tr className="group border-t border-border/70 transition-colors hover:bg-muted/40">
+                <td className="px-3 py-3">
                   <div className="flex items-center gap-3">
                     <span className="flex size-9 flex-none items-center justify-center rounded-full bg-gold/15 text-xs font-semibold text-gold">
                       {initials(g.name)}
@@ -245,7 +245,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   <select
                     value={g.group}
                     disabled={pending}
@@ -264,10 +264,10 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                     <option value="otros">Otros</option>
                   </select>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   <Badge variant={STATUS_VARIANT[g.status]}>{STATUS_LABEL[g.status]}</Badge>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3">
+                <td className="whitespace-nowrap px-3 py-3">
                   {g.table_name ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
                       <Armchair className="size-3.5" />
@@ -280,7 +280,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   <div
                     className={`flex items-center justify-center gap-1 tabular-nums ${
                       g.status === "confirmed" || g.status === "virtual"
@@ -295,15 +295,15 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="px-3 py-3 text-center">
                   {g.sent ? (
                     <Check className="mx-auto size-4 text-emerald-600" />
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-1">
+                <td className="sticky right-0 z-10 bg-card px-3 py-3 shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)] group-hover:bg-muted/40">
+                  <div className="flex items-center justify-end gap-0.5">
                     <GuestFormDialog
                       guest={g}
                       trigger={
@@ -346,7 +346,6 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                       title={`Enviar a ${firstName(g.name)}`}
                     >
                       <MessageCircle className="size-4" />
-                      <span className="hidden lg:inline">WhatsApp</span>
                     </Button>
                     <DeleteGuestButton id={g.id} name={g.name} />
                   </div>

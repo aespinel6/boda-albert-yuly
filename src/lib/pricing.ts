@@ -1,9 +1,12 @@
 import { wedding } from "./config";
 import type { Guest, PartyMember } from "./types";
 
-export interface Prices {
-  adult: number;
-  child: number;
+/** Precio por tipo de plato: { adulto: 65000, a: 50000, nino: 30000 } */
+export type Prices = Record<string, number>;
+
+/** Precios de partida (los de la config), listos para editar en el panel. */
+export function defaultPrices(): Prices {
+  return Object.fromEntries(wedding.meals.map((m) => [m.id, m.price]));
 }
 
 export interface CostSummary {
@@ -26,12 +29,12 @@ export function defaultMealFor(kind: PartyMember["kind"]): string {
   return m?.id ?? "";
 }
 
-/** Precio de un plato; si el plato no existe cae al precio general. */
+/** Precio del plato de una persona (el editado en el panel, o el de la config). */
 function mealPrice(member: PartyMember, prices: Prices): number {
   const id = member.meal || defaultMealFor(member.kind);
-  const meal = wedding.meals.find((m) => m.id === id);
-  if (meal) return meal.price;
-  return member.kind === "child" ? prices.child : prices.adult;
+  const editado = prices[id];
+  if (typeof editado === "number" && editado >= 0) return editado;
+  return wedding.meals.find((m) => m.id === id)?.price ?? 0;
 }
 
 /** Personas de una invitación que ocupan plato. */
@@ -67,7 +70,8 @@ function summarize(list: Guest[], prices: Prices): CostSummary {
   const byMeal = wedding.meals
     .map((m) => {
       const count = counts.get(m.id) ?? 0;
-      return { id: m.id, label: m.label, count, price: m.price, total: count * m.price };
+      const price = typeof prices[m.id] === "number" ? prices[m.id] : m.price;
+      return { id: m.id, label: m.label, count, price, total: count * price };
     })
     .filter((m) => m.count > 0);
 
