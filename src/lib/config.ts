@@ -10,6 +10,13 @@ export const wedding = {
     brideShort: "Yuly",
     groomShort: "Albert",
     hashtag: "#AlbertYYuly2026",
+    instagram: {
+      groom: { handle: "batpzurdo", url: "https://www.instagram.com/batpzurdo" },
+      bride: {
+        handle: "espinel_angelica_",
+        url: "https://www.instagram.com/espinel_angelica_",
+      },
+    },
     // Sección "Los novios" — edita bios y agrega las fotos cuando las tengas.
     groomBio:
       "Siempre he sido una persona curiosa. Me gusta entender el mundo, aprender de cada experiencia y creer que las mejores aventuras comienzan cuando uno decide dar un paso más. Disfruto los nuevos caminos, las conversaciones que dejan huella y esos pequeños momentos que terminan convirtiéndose en recuerdos para toda la vida.\n\nPero el amor tiene una forma curiosa de simplificarlo todo. Descubrí que, entre todas las posibilidades que la vida podía ofrecerme, la decisión más importante ya estaba tomada: caminar cada día a su lado. Porque, al final, la única certeza que necesitaba era ella.",

@@ -48,7 +48,7 @@ export default async function InvitationPage({
       <Gallery />
       <Gifts />
       <RsvpForm guest={guest} />
-      <Closing token={token} />
+      <Closing />
     </main>
   );
 }
