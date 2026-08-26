@@ -161,8 +161,8 @@ export const wedding = {
 
   // Fecha límite para confirmar asistencia
   rsvpDeadline: {
-    iso: "2026-09-18",
-    display: "18 de septiembre de 2026",
+    iso: "2026-09-11",
+    display: "11 de septiembre de 2026",
     note: "Si no recibimos tu confirmación en esa fecha, entenderemos que no podrás acompañarnos.",
   },
 
