@@ -15,6 +15,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GuestFormDialog } from "./guest-form-dialog";
 import { DeleteGuestButton } from "./delete-guest-button";
+import { RsvpAdminDialog } from "./rsvp-admin-dialog";
 
 const STATUS_LABEL: Record<GuestStatus, string> = {
   confirmed: "Confirmó",
@@ -265,7 +266,25 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                   </select>
                 </td>
                 <td className="px-3 py-3">
-                  <Badge variant={STATUS_VARIANT[g.status]}>{STATUS_LABEL[g.status]}</Badge>
+                  {/* Tocar el estado abre la confirmación manual */}
+                  <RsvpAdminDialog
+                    guest={g}
+                    trigger={
+                      <button
+                        type="button"
+                        title="Registrar o cambiar la confirmación"
+                        className="rounded-full transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Badge
+                          variant={STATUS_VARIANT[g.status]}
+                          className="gap-1 whitespace-nowrap"
+                        >
+                          {STATUS_LABEL[g.status]}
+                          <ChevronDown className="size-3" />
+                        </Badge>
+                      </button>
+                    }
+                  />
                 </td>
                 <td className="whitespace-nowrap px-3 py-3">
                   {g.table_name ? (

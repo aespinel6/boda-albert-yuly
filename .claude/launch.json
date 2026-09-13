@@ -6,6 +6,15 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["./node_modules/next/dist/bin/next", "dev", "-p", "3000"],
       "port": 3000
+    },
+    {
+      "name": "boda-demo",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "process.env.NEXT_PUBLIC_DEMO_MODE='true';process.argv.splice(1,0,'next','dev','-p','3001');require('./node_modules/next/dist/bin/next')"
+      ],
+      "port": 3001
     }
   ]
 }

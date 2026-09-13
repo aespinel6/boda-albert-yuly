@@ -7,11 +7,15 @@ import {
   ADMIN_COOKIE,
   checkPassword,
   createSessionToken,
+  verifySessionToken,
 } from "@/lib/auth";
 import { z } from "zod";
 import { guestFormSchema } from "@/lib/validations";
 import {
   createGuest,
+  getGuestById,
+  saveRsvp,
+  resetRsvp,
   updateGuest,
   updateGuestGroup,
   updateGuestTable,
@@ -178,6 +182,59 @@ export async function removeGuest(id: string): Promise<GuestActionState> {
     return {
       ok: false,
       error: e instanceof Error ? e.message : "No se pudo eliminar.",
+    };
+  }
+}
+
+/** Comprueba la sesión dentro de la acción (no solo en el middleware). */
+async function assertAdmin() {
+  const token = (await cookies()).get(ADMIN_COOKIE)?.value;
+  if (!(await verifySessionToken(token))) {
+    throw new Error("Tu sesión venció. Vuelve a entrar al panel.");
+  }
+}
+
+const adminRsvpSchema = z.object({
+  mode: z.enum(["presencial", "virtual", "no", "pending"]),
+  attendees: z.array(z.string().max(120)).max(40),
+});
+
+/**
+ * Registra la respuesta de un invitado desde el panel (confirmó por WhatsApp,
+ * en persona…). "pending" la devuelve a sin responder.
+ */
+export async function setGuestRsvp(
+  id: string,
+  mode: string,
+  attendees: string[]
+): Promise<GuestActionState> {
+  const parsed = adminRsvpSchema.safeParse({ mode, attendees });
+  if (!parsed.success) return { ok: false, error: "Respuesta inválida." };
+
+  try {
+    await assertAdmin();
+    const guest = await getGuestById(id);
+    if (!guest) return { ok: false, error: "Invitado no encontrado." };
+
+    if (parsed.data.mode === "pending") {
+      await resetRsvp(id);
+    } else {
+      // Igual que en la tarjeta: solo personas de su lista fija.
+      const allowed = new Set((guest.party ?? []).map((m) => m.name));
+      const going = parsed.data.attendees.filter((n) => allowed.has(n));
+      if (parsed.data.mode !== "no" && going.length === 0) {
+        return { ok: false, error: "Marca al menos una persona." };
+      }
+      await saveRsvp({ token: guest.token, mode: parsed.data.mode, attendees: going });
+    }
+
+    revalidatePath("/admin");
+    revalidatePath(`/i/${guest.token}`);
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "No se pudo guardar.",
     };
   }
 }

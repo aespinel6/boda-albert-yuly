@@ -8,6 +8,7 @@ import type {
   DashboardStats,
   Guest,
   GuestGroup,
+  GuestStatus,
   PartyMember,
   RsvpInput,
 } from "./types";
@@ -53,6 +54,16 @@ function buildParty(
 }
 
 /**
+ * Adultos y niños que cuentan en la invitación: si no ha respondido, todo el
+ * grupo invitado; si ya respondió, solo quienes asisten.
+ */
+function tally(party: PartyMember[], status: GuestStatus) {
+  const going = status === "pending" ? party : party.filter((m) => m.attending);
+  const adults = going.filter((m) => m.kind === "adult").length;
+  return { adults, children: going.length - adults };
+}
+
+/**
  * Capa de acceso a datos de invitados.
  * Cambia automáticamente entre MODO DEMO (en memoria) y Supabase.
  */
@@ -65,6 +76,20 @@ export async function getGuestByToken(token: string): Promise<Guest | null> {
     .from("guests")
     .select("*")
     .eq("token", token)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data as Guest | null;
+}
+
+export async function getGuestById(id: string): Promise<Guest | null> {
+  if (isDemoMode()) return demoStore.list().find((g) => g.id === id) ?? null;
+
+  const supabase = createSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("guests")
+    .select("*")
+    .eq("id", id)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
@@ -96,16 +121,14 @@ export async function saveRsvp(input: RsvpInput): Promise<Guest> {
     attending: asiste && chosen.has(m.name),
   }));
 
-  const going = party.filter((m) => m.attending);
-  const adults = going.filter((m) => m.kind === "adult").length;
-  const children = going.filter((m) => m.kind === "child").length;
-
   const status =
     input.mode === "presencial"
       ? ("confirmed" as const)
       : input.mode === "virtual"
         ? ("virtual" as const)
         : ("declined" as const);
+
+  const { adults, children } = tally(party, status);
 
   const patch = {
     status,
@@ -132,6 +155,29 @@ export async function saveRsvp(input: RsvpInput): Promise<Guest> {
 
   if (error) throw new Error(error.message);
   return data as Guest;
+}
+
+/** Devuelve la invitación a "sin responder": todo el grupo vuelve a quedar invitado. */
+export async function resetRsvp(id: string): Promise<void> {
+  const guest = await getGuestById(id);
+  if (!guest) throw new Error("Invitado no encontrado");
+
+  const party = (guest.party ?? []).map((m) => ({ ...m, attending: true }));
+  const patch = {
+    status: "pending" as const,
+    party,
+    ...tally(party, "pending"),
+    companions: null,
+    confirmed_at: null,
+  };
+
+  if (isDemoMode()) {
+    demoStore.update(id, patch);
+    return;
+  }
+  const supabase = createSupabaseAdmin();
+  const { error } = await supabase.from("guests").update(patch).eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export async function markSent(id: string, sent = true): Promise<void> {
@@ -178,12 +224,35 @@ export async function createGuest(input: GuestInput): Promise<Guest> {
 }
 
 export async function updateGuest(id: string, input: GuestInput): Promise<Guest> {
+  const current = await getGuestById(id);
+  if (!current) throw new Error("Invitado no encontrado");
+
+  const built = buildParty(input.name, input.companions, input.meal);
+  // Si ya respondió, editar no borra su respuesta: se conserva quién asiste
+  // (el principal por posición, los acompañantes por nombre). Un acompañante
+  // nuevo queda asistiendo, salvo que la invitación diga que no asiste.
+  const party =
+    current.status === "pending"
+      ? built.party
+      : built.party.map((m, i) => {
+          const antes =
+            i === 0
+              ? current.party?.[0]
+              : current.party?.slice(1).find((p) => p.name === m.name);
+          return {
+            ...m,
+            attending: antes ? antes.attending : current.status !== "declined",
+          };
+        });
+
   const patch = {
     name: input.name.trim(),
     phone: input.phone?.trim() || null,
     email: input.email?.trim() || null,
     group: input.group,
-    ...buildParty(input.name, input.companions, input.meal),
+    party,
+    ...tally(party, current.status),
+    allowed_guests: built.allowed_guests,
     table_name: input.table_name?.trim() || null,
   };
 
