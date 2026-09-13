@@ -142,7 +142,7 @@ export const wedding = {
   ],
 
   /** Capacidades que se pueden elegir para cada mesa. */
-  seatOptions: [6, 8, 10],
+  seatOptions: [4, 6, 8, 10],
 
   /**
    * Mesa sin sillas para quienes nos acompañan en línea (y para "aparcar"

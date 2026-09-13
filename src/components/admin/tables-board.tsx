@@ -13,33 +13,53 @@ import {
   clearAllTables,
   setMemberMeal,
   setTableMeal,
+  setTableSeats,
 } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
 
-const STORAGE_KEY = "boda_table_seats";
+/** Donde se guardaban antes los puestos (solo en ese navegador). */
+const LEGACY_KEY = "boda_table_seats";
 
 /** Distribución del salón: quién se sienta en cada mesa y cuántos puestos quedan. */
-export function TablesBoard({ guests }: { guests: Guest[] }) {
+export function TablesBoard({
+  guests,
+  savedSeats,
+}: {
+  guests: Guest[];
+  /** Puestos guardados en el servidor: null = nada guardado, undefined = no se pudo leer. */
+  savedSeats: Capacities | null | undefined;
+}) {
   const [pending, startTransition] = useTransition();
-  const [aviso, setAviso] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(
+    savedSeats === undefined
+      ? "No se pudieron cargar los puestos guardados; se muestran los de por defecto."
+      : null
+  );
 
-  // Capacidad por mesa (editable, se guarda en este dispositivo)
-  const [caps, setCaps] = useState<Capacities>({});
-  const [loaded, setLoaded] = useState(false);
+  // Puestos por mesa: los guardados en el servidor (iguales en todos los dispositivos)
+  const [caps, setCaps] = useState<Capacities>(savedSeats ?? {});
 
   useEffect(() => {
+    if (savedSeats) setCaps(savedSeats);
+  }, [savedSeats]);
+
+  // Una sola vez: sube al servidor los puestos que estaban guardados en este navegador.
+  useEffect(() => {
+    if (savedSeats !== null) return;
+    let local: Capacities = {};
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setCaps(JSON.parse(raw));
+      local = JSON.parse(localStorage.getItem(LEGACY_KEY) ?? "{}");
     } catch {
       /* ignore */
     }
-    setLoaded(true);
+    if (Object.keys(local).length === 0) return;
+    setCaps(local);
+    startTransition(async () => {
+      const r = await setTableSeats(local);
+      if (r.ok) localStorage.removeItem(LEGACY_KEY);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(caps));
-  }, [caps, loaded]);
 
   const { tables, unassigned } = useMemo(
     () => groupByTable(guests, caps),
@@ -58,10 +78,19 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
     });
   }
 
+  function cambiarPuestos(mesa: string, puestos: number) {
+    setAviso(null);
+    setCaps((c) => ({ ...c, [mesa]: puestos }));
+    startTransition(async () => {
+      const r = await setTableSeats({ [mesa]: puestos });
+      if (!r.ok) setAviso(r.error ?? "No se pudo guardar el cupo.");
+    });
+  }
+
   function distribuir() {
     setAviso(null);
     startTransition(async () => {
-      const r = await autoAssignTables(caps);
+      const r = await autoAssignTables();
       setAviso(
         r.sinCupo > 0
           ? `Ubicadas ${r.asignados} invitaciones. ${r.sinCupo} no cupieron: amplía alguna mesa.`
@@ -202,9 +231,7 @@ export function TablesBoard({ guests }: { guests: Guest[] }) {
                   {!t.isVirtual && (
                     <select
                       value={seatsOf(t.name, caps)}
-                      onChange={(e) =>
-                        setCaps((c) => ({ ...c, [t.name]: Number(e.target.value) }))
-                      }
+                      onChange={(e) => cambiarPuestos(t.name, Number(e.target.value))}
                       className="h-6 rounded border border-input bg-background px-1 text-[11px] text-muted-foreground"
                       aria-label={`Puestos de ${t.name}`}
                       title="Puestos de la mesa"

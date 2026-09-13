@@ -26,6 +26,7 @@ import {
   listGuests,
 } from "@/lib/guests";
 import { autoAssign, seatsUsedBy } from "@/lib/pricing";
+import { getTableSeats, saveTableSeats } from "@/lib/settings";
 
 export type LoginState = { error: string } | null;
 
@@ -100,9 +101,9 @@ export async function setTableMeal(tableName: string, meal: string) {
 }
 
 /** Distribuye automáticamente a quienes no tienen mesa, respetando el cupo. */
-export async function autoAssignTables(capacities: Record<string, number>) {
-  const guests = await listGuests();
-  const asignaciones = autoAssign(guests, capacities);
+export async function autoAssignTables() {
+  const [guests, capacities] = await Promise.all([listGuests(), getTableSeats()]);
+  const asignaciones = autoAssign(guests, capacities ?? {});
   const ids = Object.keys(asignaciones);
 
   for (const id of ids) {
@@ -114,6 +115,28 @@ export async function autoAssignTables(capacities: Record<string, number>) {
 
   revalidatePath("/admin");
   return { ok: true as const, asignados: ids.length, sinCupo };
+}
+
+/** Guarda los puestos de una o varias mesas (se ven igual en cualquier dispositivo). */
+export async function setTableSeats(
+  changes: Record<string, number>
+): Promise<GuestActionState> {
+  const parsed = z
+    .record(z.string().min(1).max(60), z.number().int().min(1).max(30))
+    .safeParse(changes);
+  if (!parsed.success) return { ok: false, error: "Cupo inválido." };
+
+  try {
+    await assertAdmin();
+    await saveTableSeats(parsed.data);
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "No se pudo guardar el cupo.",
+    };
+  }
 }
 
 /** Quita la mesa a todas las invitaciones (para volver a empezar). */
