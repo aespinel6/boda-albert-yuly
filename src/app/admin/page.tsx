@@ -1,6 +1,7 @@
 import { UserPlus } from "lucide-react";
 import { listGuests, computeStats } from "@/lib/guests";
 import { getTableSeats } from "@/lib/settings";
+import { tableNames } from "@/lib/pricing";
 import { isDemoMode } from "@/lib/utils";
 import { StatsCards } from "@/components/admin/stats-cards";
 import { GuestsTable } from "@/components/admin/guests-table";
@@ -18,6 +19,7 @@ export default async function AdminDashboard() {
     getTableSeats().catch(() => undefined),
   ]);
   const stats = computeStats(guests);
+  const mesas = tableNames(savedSeats ?? undefined);
 
   return (
     <div className="space-y-6">
@@ -29,6 +31,7 @@ export default async function AdminDashboard() {
           </p>
         </div>
         <GuestFormDialog
+          tables={mesas}
           trigger={
             <Button variant="gold">
               <UserPlus className="size-4" /> Añadir invitado
@@ -46,7 +49,7 @@ export default async function AdminDashboard() {
       )}
 
       <StatsCards stats={stats} />
-      <GuestsTable guests={guests} />
+      <GuestsTable guests={guests} tables={mesas} />
       <CostSummary guests={guests} />
       <TablesBoard guests={guests} savedSeats={savedSeats} />
     </div>

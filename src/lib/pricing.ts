@@ -153,6 +153,24 @@ export function seatsOf(name: string, capacities?: Capacities): number {
   return wedding.tables.find((t) => t.name === name)?.seats ?? 6;
 }
 
+/**
+ * Mesas reales del salón: las de la config y, después, las agregadas desde
+ * el panel (toda mesa con cupo guardado que no esté en la config).
+ */
+export function tableNames(capacities?: Capacities): string[] {
+  const configuradas: string[] = wedding.tables.map((t) => t.name);
+  const agregadas = Object.keys(capacities ?? {})
+    .filter((n) => !configuradas.includes(n) && n !== wedding.virtualTable)
+    .sort((a, b) => a.localeCompare(b, "es", { numeric: true }));
+  return [...configuradas, ...agregadas];
+}
+
+/** Nombre para una mesa nueva: "Mesa N" con el número siguiente al mayor usado. */
+export function nextTableName(existing: string[]): string {
+  const numeros = existing.map((n) => Number(/^Mesa (\d+)$/.exec(n)?.[1] ?? 0));
+  return `Mesa ${Math.max(0, ...numeros) + 1}`;
+}
+
 /** Agrupa las invitaciones por mesa, en el orden definido en la config. */
 export function groupByTable(
   guests: Guest[],
@@ -173,13 +191,13 @@ export function groupByTable(
   const personas = (list: Guest[]) =>
     list.reduce((n, g) => n + seatsUsedBy(g), 0);
 
-  // Mesas de la config, luego cualquier otra, y de última la mesa virtual.
-  const configuradas: string[] = wedding.tables.map((t) => t.name);
+  // Mesas de la config y agregadas, luego cualquier otra, y de última la virtual.
+  const conocidas = tableNames(capacities);
   const virtual = wedding.virtualTable;
   const nombres = [
-    ...configuradas,
+    ...conocidas,
     ...[...porMesa.keys()].filter(
-      (n) => !configuradas.includes(n) && n !== virtual
+      (n) => !conocidas.includes(n) && n !== virtual
     ),
     virtual,
   ];

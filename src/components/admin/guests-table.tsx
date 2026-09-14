@@ -43,7 +43,7 @@ function initials(name: string) {
     .join("");
 }
 
-export function GuestsTable({ guests }: { guests: Guest[] }) {
+export function GuestsTable({ guests, tables }: { guests: Guest[]; tables: string[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [group, setGroup] = useState<string>("all");
@@ -325,6 +325,7 @@ export function GuestsTable({ guests }: { guests: Guest[] }) {
                   <div className="flex items-center justify-end gap-0.5">
                     <GuestFormDialog
                       guest={g}
+                      tables={tables}
                       trigger={
                         <Button variant="ghost" size="icon" className="size-8" title="Editar">
                           <Pencil className="size-4" />

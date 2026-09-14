@@ -25,8 +25,9 @@ import {
   markSent,
   listGuests,
 } from "@/lib/guests";
-import { autoAssign, seatsUsedBy } from "@/lib/pricing";
-import { getTableSeats, saveTableSeats } from "@/lib/settings";
+import { wedding } from "@/lib/config";
+import { autoAssign, nextTableName, seatsUsedBy, tableNames } from "@/lib/pricing";
+import { getTableSeats, removeTableSeats, saveTableSeats } from "@/lib/settings";
 
 export type LoginState = { error: string } | null;
 
@@ -136,6 +137,51 @@ export async function setTableSeats(
     return {
       ok: false,
       error: e instanceof Error ? e.message : "No se pudo guardar el cupo.",
+    };
+  }
+}
+
+/** Puestos con los que nace una mesa agregada (se cambian en el tablero). */
+const NEW_TABLE_SEATS = 6;
+
+/** Agrega una mesa al salón ("Mesa N", con el siguiente número libre). */
+export async function addTable(): Promise<GuestActionState & { name?: string }> {
+  try {
+    await assertAdmin();
+    const [guests, seats] = await Promise.all([listGuests(), getTableSeats()]);
+    const name = nextTableName([
+      ...tableNames(seats ?? undefined),
+      ...guests.map((g) => g.table_name ?? ""),
+    ]);
+    await saveTableSeats({ [name]: NEW_TABLE_SEATS });
+    revalidatePath("/admin");
+    return { ok: true, name };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "No se pudo agregar la mesa.",
+    };
+  }
+}
+
+/** Quita una mesa agregada desde el panel (solo si está vacía). */
+export async function removeTable(name: string): Promise<GuestActionState> {
+  try {
+    await assertAdmin();
+    if (wedding.tables.some((t) => t.name === name) || name === wedding.virtualTable) {
+      return { ok: false, error: "Las mesas base no se pueden quitar." };
+    }
+    const guests = await listGuests();
+    if (guests.some((g) => g.table_name === name)) {
+      return { ok: false, error: `${name} tiene invitados: muévelos antes de quitarla.` };
+    }
+    await removeTableSeats(name);
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "No se pudo quitar la mesa.",
     };
   }
 }

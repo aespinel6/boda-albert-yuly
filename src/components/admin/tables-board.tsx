@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   Armchair, Users2, Baby, AlertTriangle, Wand2, Eraser, Loader2, Lock, Video,
+  Plus, Trash2,
 } from "lucide-react";
 import type { Guest } from "@/lib/types";
 import { wedding } from "@/lib/config";
@@ -14,6 +15,8 @@ import {
   setMemberMeal,
   setTableMeal,
   setTableSeats,
+  addTable,
+  removeTable,
 } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
 
@@ -92,6 +95,26 @@ export function TablesBoard({
     });
   }
 
+  function agregarMesa() {
+    setAviso(null);
+    startTransition(async () => {
+      const r = await addTable();
+      setAviso(
+        r.ok
+          ? `Se agregó ${r.name} con 6 puestos (puedes cambiarlos en la tarjeta).`
+          : r.error ?? "No se pudo agregar la mesa."
+      );
+    });
+  }
+
+  function quitarMesa(mesa: string) {
+    setAviso(null);
+    startTransition(async () => {
+      const r = await removeTable(mesa);
+      if (!r.ok) setAviso(r.error ?? "No se pudo quitar la mesa.");
+    });
+  }
+
   function distribuir() {
     setAviso(null);
     startTransition(async () => {
@@ -134,7 +157,10 @@ export function TablesBoard({
             ubicar
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={agregarMesa} disabled={pending}>
+            <Plus className="size-4" /> Agregar mesa
+          </Button>
           <Button variant="gold" size="sm" onClick={distribuir} disabled={pending}>
             {pending ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
             Distribuir automáticamente
@@ -281,7 +307,20 @@ export function TablesBoard({
               )}
 
               {t.guests.length === 0 ? (
-                <p className="mt-3 text-xs text-muted-foreground">Mesa vacía</p>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">Mesa vacía</p>
+                  {/* Solo las mesas agregadas desde el panel se pueden quitar */}
+                  {!t.isVirtual && !wedding.tables.some((x) => x.name === t.name) && (
+                    <button
+                      type="button"
+                      onClick={() => quitarMesa(t.name)}
+                      disabled={pending}
+                      className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50"
+                    >
+                      <Trash2 className="size-3.5" /> Quitar mesa
+                    </button>
+                  )}
+                </div>
               ) : (
                 <ul className="mt-3 space-y-2">
                   {t.guests.map((g) => (

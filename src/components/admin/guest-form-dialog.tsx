@@ -22,9 +22,12 @@ type Row = { name: string; kind: "adult" | "child"; meal: string };
 export function GuestFormDialog({
   guest,
   trigger,
+  tables,
 }: {
   guest?: Guest;
   trigger: ReactNode;
+  /** Mesas reales del salón (las de la config y las agregadas desde el panel). */
+  tables: string[];
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,9 +150,18 @@ export function GuestFormDialog({
                           className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <option value="">Sin asignar</option>
-                          {wedding.tables.map((t) => (
-                            <option key={t.name} value={t.name}>
-                              {t.name}
+                          {[
+                            ...tables,
+                            wedding.virtualTable,
+                            // Conserva una mesa que ya no esté en la lista
+                            ...(guest?.table_name &&
+                            !tables.includes(guest.table_name) &&
+                            guest.table_name !== wedding.virtualTable
+                              ? [guest.table_name]
+                              : []),
+                          ].map((name) => (
+                            <option key={name} value={name}>
+                              {name}
                             </option>
                           ))}
                         </select>
