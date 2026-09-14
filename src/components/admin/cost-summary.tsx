@@ -53,7 +53,7 @@ export function CostSummary({ guests }: { guests: Guest[] }) {
             Precio por plato
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {wedding.meals.map((m) => (
+            {wedding.meals.filter((m) => m.id !== wedding.lapMeal).map((m) => (
               <PriceInput
                 key={m.id}
                 label={m.label}

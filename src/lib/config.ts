@@ -157,7 +157,12 @@ export const wedding = {
     { id: "a", label: "Plato A", price: 50000, for: "adult", default: false },
     { id: "b", label: "Plato B", price: 60000, for: "adult", default: false },
     { id: "nino", label: "Plato niño", price: 30000, for: "child", default: true },
+    // Niño de brazos: va en la invitación pero no ocupa puesto ni plato.
+    { id: "brazos", label: "De brazos", price: 0, for: "child", default: false },
   ],
+
+  /** Plato que marca a un niño de brazos (sin puesto ni plato). */
+  lapMeal: "brazos",
 
   // Fecha límite para confirmar asistencia
   rsvpDeadline: {

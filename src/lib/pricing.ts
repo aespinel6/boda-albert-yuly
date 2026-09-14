@@ -37,9 +37,14 @@ function mealPrice(member: PartyMember, prices: Prices): number {
   return wedding.meals.find((m) => m.id === id)?.price ?? 0;
 }
 
-/** Personas de una invitación que ocupan plato. */
+/** Niño de brazos: va con su familia, pero no ocupa puesto ni plato. */
+export function isLap(m: PartyMember): boolean {
+  return m.meal === wedding.lapMeal;
+}
+
+/** Personas de una invitación que ocupan puesto y plato. */
 function eaters(g: Guest, soloConfirmados: boolean): PartyMember[] {
-  const party = g.party ?? [];
+  const party = (g.party ?? []).filter((m) => !isLap(m));
   // Si aún no ha respondido, se proyecta con todo el grupo invitado.
   if (g.status === "pending") return party;
   return soloConfirmados ? party.filter((m) => m.attending) : party;
