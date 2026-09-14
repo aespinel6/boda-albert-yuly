@@ -128,8 +128,9 @@ export async function setTableSeats(
 
   try {
     await assertAdmin();
+    // Sin revalidar: el tablero ya muestra el cambio y así no se repinta con
+    // una lectura anterior al guardado.
     await saveTableSeats(parsed.data);
-    revalidatePath("/admin");
     return { ok: true };
   } catch (e) {
     return {

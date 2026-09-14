@@ -12,33 +12,29 @@ import type { Capacities } from "./pricing";
 const BUCKET = "panel";
 const SEATS_FILE = "mesas.json";
 
-type Supabase = ReturnType<typeof createSupabaseAdmin>;
-
 // Modo demo: en memoria, igual que los invitados.
 const demo = globalThis as unknown as { __demoSeats?: Capacities };
 
 /** Lee el archivo; null si todavía no existe. Cualquier otro fallo lanza error. */
-async function readSeats(supabase: Supabase): Promise<Capacities | null> {
-  const { data: files, error: listError } = await supabase.storage
-    .from(BUCKET)
-    .list("", { search: SEATS_FILE });
+async function readSeats(): Promise<Capacities | null> {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  // La CDN de Supabase sirve la descarga desde caché aunque el archivo haya
+  // cambiado: una URL distinta en cada lectura obliga a leer lo recién guardado.
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${BUCKET}/${SEATS_FILE}?v=${crypto.randomUUID()}`,
+    { headers: { Authorization: `Bearer ${key}`, apikey: key }, cache: "no-store" }
+  );
+  if (res.ok) return (await res.json()) as Capacities;
 
-  if (listError) {
-    const { error: sinBucket } = await supabase.storage.getBucket(BUCKET);
-    if (sinBucket) return null; // aún no se ha guardado nada
-    throw new Error(listError.message);
-  }
-  if (!files?.some((f) => f.name === SEATS_FILE)) return null;
-
-  const { data, error } = await supabase.storage.from(BUCKET).download(SEATS_FILE);
-  if (error || !data) throw new Error(error?.message ?? "No se pudo leer las mesas");
-  return JSON.parse(await data.text()) as Capacities;
+  // Sin archivo (o sin bucket) = todavía no se ha guardado nada.
+  if (/not.?found|NoSuchKey/i.test(await res.text())) return null;
+  throw new Error(`No se pudieron leer los puestos de las mesas (${res.status}).`);
 }
 
 /** Puestos por mesa guardados, o null si nunca se han guardado. */
 export async function getTableSeats(): Promise<Capacities | null> {
   if (isDemoMode()) return demo.__demoSeats ?? null;
-  return readSeats(createSupabaseAdmin());
+  return readSeats();
 }
 
 /** Cambia los puestos de una o varias mesas, conservando las demás. */
@@ -49,7 +45,7 @@ export async function saveTableSeats(changes: Capacities): Promise<void> {
   }
 
   const supabase = createSupabaseAdmin();
-  const seats = { ...((await readSeats(supabase)) ?? {}), ...changes };
+  const seats = { ...((await readSeats()) ?? {}), ...changes };
   const upload = () =>
     supabase.storage.from(BUCKET).upload(SEATS_FILE, JSON.stringify(seats), {
       upsert: true,

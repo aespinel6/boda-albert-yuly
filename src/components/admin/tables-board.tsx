@@ -79,11 +79,16 @@ export function TablesBoard({
   }
 
   function cambiarPuestos(mesa: string, puestos: number) {
+    const antes = seatsOf(mesa, caps);
     setAviso(null);
     setCaps((c) => ({ ...c, [mesa]: puestos }));
     startTransition(async () => {
       const r = await setTableSeats({ [mesa]: puestos });
-      if (!r.ok) setAviso(r.error ?? "No se pudo guardar el cupo.");
+      if (!r.ok) {
+        // No se guardó: se vuelve al valor anterior y se avisa.
+        setCaps((c) => ({ ...c, [mesa]: antes }));
+        setAviso(`No se guardó el cupo de ${mesa}: ${r.error ?? "inténtalo de nuevo."}`);
+      }
     });
   }
 
