@@ -129,6 +129,8 @@ export interface TableSummary {
   over: boolean;
   /** Mesa sin sillas: los que nos ven en línea. */
   isVirtual: boolean;
+  /** Cerrada a mano: se da por completa aunque le queden puestos. */
+  closed: boolean;
 }
 
 /** Personas de una invitación que se conectan (no ocupan silla ni plato). */
@@ -174,10 +176,12 @@ export function nextTableName(existing: string[]): string {
 /** Agrupa las invitaciones por mesa, en el orden definido en la config. */
 export function groupByTable(
   guests: Guest[],
-  capacities?: Capacities
+  capacities?: Capacities,
+  /** Mesas cerradas a mano (se dan por completas). */
+  closed?: string[]
 ): {
   tables: TableSummary[];
-  unassigned: Omit<TableSummary, "seats" | "free" | "over" | "isVirtual">;
+  unassigned: Omit<TableSummary, "seats" | "free" | "over" | "isVirtual" | "closed">;
 } {
   const porMesa = new Map<string, Guest[]>();
   const sinMesa: Guest[] = [];
@@ -211,15 +215,22 @@ export function groupByTable(
         ? list.reduce((n, g) => n + (onlineCountOf(g) || seatsUsedBy(g)), 0)
         : personas(list);
       const seats = isVirtual ? 0 : seatsOf(name, capacities);
+      // Cerrada a mano: se da por completa, no le quedan puestos libres.
+      const cerrada = !isVirtual && (closed ?? []).includes(name);
       return {
         name,
         guests: list,
         people,
         confirmed: list.filter((g) => g.status === "confirmed").length,
         seats,
-        free: isVirtual ? Number.MAX_SAFE_INTEGER : Math.max(0, seats - people),
+        free: isVirtual
+          ? Number.MAX_SAFE_INTEGER
+          : cerrada
+            ? 0
+            : Math.max(0, seats - people),
         over: isVirtual ? false : people > seats,
         isVirtual,
+        closed: cerrada,
       };
     }),
     unassigned: {
@@ -238,9 +249,10 @@ export function groupByTable(
  */
 export function autoAssign(
   guests: Guest[],
-  capacities?: Capacities
+  capacities?: Capacities,
+  closed?: string[]
 ): Record<string, string> {
-  const { tables, unassigned } = groupByTable(guests, capacities);
+  const { tables, unassigned } = groupByTable(guests, capacities, closed);
   const libre = new Map(tables.map((t) => [t.name, t.free]));
   const grupos = new Map(
     tables.map((t) => [t.name, new Set(t.guests.map((g) => g.group))])

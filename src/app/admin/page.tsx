@@ -1,6 +1,6 @@
 import { UserPlus } from "lucide-react";
 import { listGuests, computeStats } from "@/lib/guests";
-import { getTableSeats } from "@/lib/settings";
+import { getClosedTables, getTableSeats } from "@/lib/settings";
 import { tableNames } from "@/lib/pricing";
 import { isDemoMode } from "@/lib/utils";
 import { StatsCards } from "@/components/admin/stats-cards";
@@ -13,10 +13,11 @@ import { Button } from "@/components/ui/button";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const [guests, savedSeats] = await Promise.all([
+  const [guests, savedSeats, savedClosed] = await Promise.all([
     listGuests(),
     // undefined = no se pudo leer (el tablero no toca lo guardado)
     getTableSeats().catch(() => undefined),
+    getClosedTables().catch(() => undefined),
   ]);
   const stats = computeStats(guests);
   const mesas = tableNames(savedSeats ?? undefined);
@@ -51,7 +52,7 @@ export default async function AdminDashboard() {
       <StatsCards stats={stats} />
       <GuestsTable guests={guests} tables={mesas} />
       <CostSummary guests={guests} />
-      <TablesBoard guests={guests} savedSeats={savedSeats} />
+      <TablesBoard guests={guests} savedSeats={savedSeats} savedClosed={savedClosed} />
     </div>
   );
 }

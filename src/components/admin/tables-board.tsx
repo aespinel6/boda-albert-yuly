@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
-  Armchair, Users2, Baby, AlertTriangle, Wand2, Eraser, Loader2, Lock, Video,
+  Armchair, Users2, Baby, AlertTriangle, Wand2, Eraser, Loader2, Lock, LockOpen, Video,
   Plus, Trash2,
 } from "lucide-react";
 import type { Guest } from "@/lib/types";
@@ -15,6 +15,7 @@ import {
   setMemberMeal,
   setTableMeal,
   setTableSeats,
+  setTableClosed,
   addTable,
   removeTable,
 } from "@/app/actions/admin";
@@ -27,10 +28,13 @@ const LEGACY_KEY = "boda_table_seats";
 export function TablesBoard({
   guests,
   savedSeats,
+  savedClosed,
 }: {
   guests: Guest[];
   /** Puestos guardados en el servidor: null = nada guardado, undefined = no se pudo leer. */
   savedSeats: Capacities | null | undefined;
+  /** Mesas cerradas a mano guardadas en el servidor (undefined = no se pudo leer). */
+  savedClosed: string[] | undefined;
 }) {
   const [pending, startTransition] = useTransition();
   const [aviso, setAviso] = useState<string | null>(
@@ -41,10 +45,16 @@ export function TablesBoard({
 
   // Puestos por mesa: los guardados en el servidor (iguales en todos los dispositivos)
   const [caps, setCaps] = useState<Capacities>(savedSeats ?? {});
+  // Mesas cerradas a mano
+  const [closed, setClosed] = useState<string[]>(savedClosed ?? []);
 
   useEffect(() => {
     if (savedSeats) setCaps(savedSeats);
   }, [savedSeats]);
+
+  useEffect(() => {
+    if (savedClosed) setClosed(savedClosed);
+  }, [savedClosed]);
 
   // Una sola vez: sube al servidor los puestos que estaban guardados en este navegador.
   useEffect(() => {
@@ -65,8 +75,8 @@ export function TablesBoard({
   }, []);
 
   const { tables, unassigned } = useMemo(
-    () => groupByTable(guests, caps),
-    [guests, caps]
+    () => groupByTable(guests, caps, closed),
+    [guests, caps, closed]
   );
 
   const reales = tables.filter((t) => !t.isVirtual);
@@ -91,6 +101,20 @@ export function TablesBoard({
         // No se guardó: se vuelve al valor anterior y se avisa.
         setCaps((c) => ({ ...c, [mesa]: antes }));
         setAviso(`No se guardó el cupo de ${mesa}: ${r.error ?? "inténtalo de nuevo."}`);
+      }
+    });
+  }
+
+  /** Cierra la mesa (completa aunque queden puestos) o la vuelve a abrir. */
+  function alternarCierre(mesa: string, cerrar: boolean) {
+    const quitar = (c: string[]) => c.filter((n) => n !== mesa);
+    setAviso(null);
+    setClosed((c) => (cerrar ? [...quitar(c), mesa] : quitar(c)));
+    startTransition(async () => {
+      const r = await setTableClosed(mesa, cerrar);
+      if (!r.ok) {
+        setClosed((c) => (cerrar ? quitar(c) : [...quitar(c), mesa]));
+        setAviso(`No se guardó el cierre de ${mesa}: ${r.error ?? "inténtalo de nuevo."}`);
       }
     });
   }
@@ -140,11 +164,23 @@ export function TablesBoard({
     return tables.map((t) => ({
       name: t.name,
       // La mesa actual siempre se puede mantener; la virtual nunca se llena.
+      // Una mesa cerrada tiene 0 libres, así que no acepta a nadie más.
       full: !t.isVirtual && t.name !== actual && t.free < necesita,
       free: t.free,
       isVirtual: t.isVirtual,
+      closed: t.closed,
     }));
   };
+
+  /** Texto de cada mesa en los selectores de asignación. */
+  const etiqueta = (o: ReturnType<typeof opcionesPara>[number]) =>
+    o.isVirtual
+      ? "· en línea"
+      : o.closed
+        ? "(cerrada)"
+        : o.full
+          ? "(llena)"
+          : `· ${o.free} libres`;
 
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
@@ -204,12 +240,7 @@ export function TablesBoard({
                   <option value="">Asignar…</option>
                   {opcionesPara(g).map((t) => (
                     <option key={t.name} value={t.name} disabled={t.full}>
-                      {t.name}{" "}
-                      {t.isVirtual
-                        ? "· en línea"
-                        : t.full
-                          ? "(llena)"
-                          : `· ${t.free} libres`}
+                      {t.name} {etiqueta(t)}
                     </option>
                   ))}
                 </select>
@@ -340,12 +371,7 @@ export function TablesBoard({
                           <option value="">Sin mesa</option>
                           {opcionesPara(g, t.name).map((o) => (
                             <option key={o.name} value={o.name} disabled={o.full}>
-                              {o.name}{" "}
-                              {o.isVirtual
-                                ? "· en línea"
-                                : o.full
-                                  ? "(llena)"
-                                  : `· ${o.free} libres`}
+                              {o.name} {etiqueta(o)}
                             </option>
                           ))}
                         </select>
@@ -403,10 +429,41 @@ export function TablesBoard({
                 </ul>
               )}
 
-              {llena && (
-                <p className="mt-2 flex items-center gap-1 text-[11px] font-medium text-emerald-600">
-                  <Lock className="size-3" /> Mesa completa
-                </p>
+              {/* Estado de la mesa y botón para cerrarla / reabrirla */}
+              {!t.isVirtual && (
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  {llena ? (
+                    <p className="flex items-center gap-1 text-[11px] font-medium text-emerald-600">
+                      <Lock className="size-3" />
+                      {t.closed && t.people < t.seats
+                        ? `Mesa cerrada con ${t.people} de ${t.seats}`
+                        : "Mesa completa"}
+                    </p>
+                  ) : (
+                    <span />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => alternarCierre(t.name, !t.closed)}
+                    disabled={pending}
+                    title={
+                      t.closed
+                        ? "Volver a aceptar invitados en esta mesa"
+                        : "Darla por completa aunque le queden puestos"
+                    }
+                    className="inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                  >
+                    {t.closed ? (
+                      <>
+                        <LockOpen className="size-3" /> Reabrir mesa
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="size-3" /> Cerrar mesa
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
               {t.over && (
                 <p className="mt-2 text-[11px] font-medium text-destructive">

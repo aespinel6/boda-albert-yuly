@@ -27,7 +27,13 @@ import {
 } from "@/lib/guests";
 import { wedding } from "@/lib/config";
 import { autoAssign, nextTableName, seatsUsedBy, tableNames } from "@/lib/pricing";
-import { getTableSeats, removeTableSeats, saveTableSeats } from "@/lib/settings";
+import {
+  getClosedTables,
+  getTableSeats,
+  removeTableSeats,
+  saveClosedTable,
+  saveTableSeats,
+} from "@/lib/settings";
 
 export type LoginState = { error: string } | null;
 
@@ -103,8 +109,12 @@ export async function setTableMeal(tableName: string, meal: string) {
 
 /** Distribuye automáticamente a quienes no tienen mesa, respetando el cupo. */
 export async function autoAssignTables() {
-  const [guests, capacities] = await Promise.all([listGuests(), getTableSeats()]);
-  const asignaciones = autoAssign(guests, capacities ?? {});
+  const [guests, capacities, closed] = await Promise.all([
+    listGuests(),
+    getTableSeats(),
+    getClosedTables(),
+  ]);
+  const asignaciones = autoAssign(guests, capacities ?? {}, closed);
   const ids = Object.keys(asignaciones);
 
   for (const id of ids) {
@@ -176,12 +186,38 @@ export async function removeTable(name: string): Promise<GuestActionState> {
       return { ok: false, error: `${name} tiene invitados: muévelos antes de quitarla.` };
     }
     await removeTableSeats(name);
+    await saveClosedTable(name, false);
     revalidatePath("/admin");
     return { ok: true };
   } catch (e) {
     return {
       ok: false,
       error: e instanceof Error ? e.message : "No se pudo quitar la mesa.",
+    };
+  }
+}
+
+/** Cierra una mesa (se da por completa aunque le queden puestos) o la reabre. */
+export async function setTableClosed(
+  name: string,
+  closed: boolean
+): Promise<GuestActionState> {
+  const parsed = z
+    .object({ name: z.string().min(1).max(60), closed: z.boolean() })
+    .safeParse({ name, closed });
+  if (!parsed.success || name === wedding.virtualTable) {
+    return { ok: false, error: "Mesa inválida." };
+  }
+
+  try {
+    await assertAdmin();
+    // Sin revalidar, igual que los puestos: el tablero ya muestra el cambio.
+    await saveClosedTable(parsed.data.name, parsed.data.closed);
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "No se pudo cerrar la mesa.",
     };
   }
 }
